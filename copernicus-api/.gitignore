@@ -1,0 +1,6 @@
+data/
+*.iml
+*.iws
+__pycache__/
+*.py[cod]
+*$py.class
