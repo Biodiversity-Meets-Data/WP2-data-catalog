@@ -9,4 +9,5 @@ Some code is shared between the two, the procedure being the same:
 - pick relevant attributes from json payload
 - build an eml file using third-party libraries (with some validation og the eml/xml)
 
-There are dedicated readme files for each API. Wekeo scripts use conda environment, and by extension STAC does as well.
+There are dedicated readme files for each API. Wekeo scripts use conda environment (as suggested by its API python library), and by extension STAC scripts do as well.
+First readme file to read should be [wekeo](./WEKEO.md)

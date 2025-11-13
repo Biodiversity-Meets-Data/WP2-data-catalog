@@ -4,7 +4,12 @@ Main procedure is at https://help.wekeo.eu/en/articles/6751608-how-to-use-the-hd
 
 - install conda
 - create conda env
-- activate conda env
+- either set default conda env. or activate conda env. 
+
+```bash
+conda activate wekeo_api
+```
+
 - install wekeo python library
 - install pip
 - install metapype https://github.com/PASTAplus/metapype-eml
