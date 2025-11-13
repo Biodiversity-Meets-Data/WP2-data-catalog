@@ -1,11 +1,14 @@
 ### Setup
 
+Main procedure is at https://help.wekeo.eu/en/articles/6751608-how-to-use-the-hda-api-in-python
+
 - install conda
 - create conda env
 - activate conda env
 - install wekeo python library
 - install pip
-- install mypy for type hinting
+- install metapype https://github.com/PASTAplus/metapype-eml
+- (optional) install mypy for type hinting
 - (intellij) select conda env as python interpreter
 
 
