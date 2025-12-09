@@ -1,1 +1,1 @@
-this is a empty readme
+WP2 directory
