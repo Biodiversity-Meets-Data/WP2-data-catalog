@@ -6,7 +6,7 @@ Same setup as the copernicus api:
 
 - use conda
 - activate env.
-- 
+
 ```bash
 conda activate wekeo_api
 ```
