@@ -43,13 +43,13 @@ with rasterio.open(tiff_url) as src:
             "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
         ],
         assets={
-            "ndvi": pystac.Asset(
+            "bdod": pystac.Asset(
                 href=tiff_url,
-                title="Normalized Difference Vegetation Index",
+                title="SoilGrids250m 2.0 - Bulk density aggregated 5000m",
                 extra_fields={
                     "eo:bands": [ # REQUIRED: define the bands in the eo extension for openEO to be able to load it
                         {
-                            "name": "NDVI-band",
+                            "name": "bdod-band",
                         }
                     ],
                 }
