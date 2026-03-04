@@ -14,7 +14,7 @@ tiff_url = "https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
 dt = datetime.fromisoformat("1905-04-01")
 
 # desired output path for the stac item
-output_path = "bdod-stac-item.json"
+output_path = "../data/bdod-stac-item.json"
 
 with rasterio.open(tiff_url) as src:
     proj_bounds = list(src.bounds)

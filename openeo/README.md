@@ -40,15 +40,11 @@ conda install conda-forge::openeo
 conda install conda-forge::soilgrids
 ```
 
-- install pystac
+- install pystac, jsonschema, rasterio 
 
 ```bash
 conda install conda-forge::pystac
-```
-
-- install rasterio
-
-```bash
+conda install conda-forge::jsonschema
 conda install conda-forge::rasterio
 ```
 
