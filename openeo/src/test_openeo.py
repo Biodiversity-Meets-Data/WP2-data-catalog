@@ -12,6 +12,8 @@ tiff_url = "https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
 # In case your data spans multiple days, you can use the datetime of the first day of the data
 # When specifying a temporal range in load_stac later on, the stac item will be filteren only on this datetime
 dt = datetime.fromisoformat("1905-04-01")
+start_datetime = dt
+end_datetime = datetime.fromisoformat("2016-07-05")
 
 # desired output path for the stac item
 output_path = "../data/bdod-stac-item.json"
@@ -32,7 +34,9 @@ with rasterio.open(tiff_url) as src:
             ]]
         },
         bbox=[left, bottom, right, top],
-        datetime= dt,
+        datetime=dt,
+        start_datetime=start_datetime,
+        end_datetime=end_datetime,
         properties={ # These properties are optional, but can speed up the loading of the data.
             "proj:epsg": src.crs.to_epsg(),
             "proj:shape": src.shape, # Caveat: this is [height, width] and not [width, height] if you want to set them yourself

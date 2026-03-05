@@ -1,6 +1,6 @@
 ### Intro
 
-let's try another API, this time to convert a resource to a STAC-compatible resource
+Let's try another API, this time to convert a resource to a STAC-compatible resource usable by OpenEO
 
 - use openeo for discoverable datasources
 - Soil grid (https://rest.isric.org/soilgrids/v2.0/docs) -> stac json -> openeo
@@ -40,12 +40,15 @@ conda install conda-forge::openeo
 conda install conda-forge::soilgrids
 ```
 
-- install pystac, jsonschema, rasterio 
+- install pystac, shapely, jsonschema, rasterio 
 
 ```bash
 conda install conda-forge::pystac
+conda install conda-forge::shapely
 conda install conda-forge::jsonschema
 conda install conda-forge::rasterio
+# optional
+conda install conda-forge::stac-validator
 ```
 
 ### geotiff -> stac
