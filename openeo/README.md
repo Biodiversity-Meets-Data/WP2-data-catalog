@@ -1,6 +1,7 @@
 ### Intro
 
-Let's try another API, this time to convert a resource to a STAC-compatible resource usable by OpenEO
+Let's try another API, this time to convert a resource to a STAC-compatible resource usable by OpenEO.
+Bunch of links:
 
 - use openeo for discoverable datasources
 - Soil grid (https://rest.isric.org/soilgrids/v2.0/docs) -> stac json -> openeo
@@ -53,4 +54,13 @@ conda install conda-forge::stac-validator
 
 ### geotiff -> stac
 
-// TODO
+Use
+
+- tutorial: https://stacspec.org/en/tutorials/2-create-stac-catalog-python/
+- data: 
+  - https://data.isric.org/geonetwork/srv/eng/catalog.search#/metadata/b5ca4bb7-7846-48d9-9af9-a0a4a0b94f23
+  - https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
+
+TODO:
+
+- create one dataset/collection, each with one item, each with one asset
