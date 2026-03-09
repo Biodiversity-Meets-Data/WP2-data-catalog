@@ -1,5 +1,6 @@
 import os
 import traceback
+import argparse
 from tempfile import TemporaryDirectory
 from urllib import parse
 from urllib.parse import urlparse
@@ -13,13 +14,20 @@ from shapely.geometry import Polygon, mapping, shape
 
 
 class Convert:
-    def create_from_urls(self, urls: list, datetime, start_datetime, end_datetime):
+    def __init__(self, root_href):
+        self.root_href = root_href
+
+    def create_from_urls(self, urls: list, arguments):
         print("converting " + str(len(urls)) + " urls")
+
+        date_time = datetime.fromisoformat(arguments.datetime)
+        start_datetime = datetime.fromisoformat(arguments.start_datetime)
+        end_datetime = datetime.fromisoformat(arguments.end_datetime)
 
         # tmp_dir = TemporaryDirectory()
         # print(f"temp dir {tmp_dir}")
 
-        items = self.create_items_from_urls(urls, datetime=datetime, start_datetime=start_datetime, end_datetime=end_datetime)
+        items = self.create_items_from_urls(urls, date_time=date_time, start_datetime=start_datetime, end_datetime=end_datetime)
 
         spatial_extent, temporal_extent = self.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
@@ -31,8 +39,7 @@ class Convert:
         catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
-        catalog.normalize_and_save(root_href=os.path.join("../data", 'stac-collection'),
-                                   catalog_type=pystac.CatalogType.SELF_CONTAINED)
+        catalog.normalize_and_save(root_href=self.root_href, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_catalog(self, catalog_id: str, description: str):
         print(f"creating catalog {catalog_id}")
@@ -46,14 +53,14 @@ class Convert:
 
         return collection
 
-    def create_items_from_urls(self, urls, datetime, start_datetime, end_datetime):
+    def create_items_from_urls(self, urls, date_time, start_datetime, end_datetime):
         print("creating items for " + str(len(urls)) + " urls")
         items = list()
 
         for url in urls:
             print(f"url {url}")
             # item = self.create_item(entry.id)
-            item = self.create_item_from_url(url, datetime=datetime, start_datetime=start_datetime, end_datetime=end_datetime)
+            item = self.create_item_from_url(url, date_time=date_time, start_datetime=start_datetime, end_datetime=end_datetime)
             items.append(item)
 
         return items
@@ -93,7 +100,8 @@ class Convert:
 
         for item in items:
             geometries.append(shape(item.geometry))
-            datetimes.append(item.datetime)
+            datetimes.append(item.common_metadata.start_datetime)
+            datetimes.append(item.common_metadata.end_datetime)
 
         # spatial
         unioned_footprint = shapely.union_all(geometries)
@@ -107,7 +115,7 @@ class Convert:
 
         return spatial_extent, temporal_extent
 
-    def create_item_from_url(self, url, datetime, start_datetime, end_datetime):
+    def create_item_from_url(self, url, date_time, start_datetime, end_datetime):
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
             proj_bounds = list(src.bounds)
@@ -124,12 +132,12 @@ class Convert:
                 id=filename,
                 geometry=polygon,
                 bbox=[left, bottom, right, top],
-                datetime=datetime,
+                datetime=date_time,
                 start_datetime=start_datetime,
                 end_datetime=end_datetime,
-                properties={ # These properties are optional, but can speed up the loading of the data.
+                properties={  # These properties are optional, but can speed up the loading of the data.
                     "proj:epsg": src.crs.to_epsg(),
-                    "proj:shape": src.shape, # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
+                    "proj:shape": src.shape, #  Caveat: this is [height, width] and not [width, height] if you want to set them yourself
                     "proj:bbox": proj_bounds,
                 },
                 stac_extensions=[
@@ -155,58 +163,12 @@ class Convert:
             return item
 
 
-# def convert_url(url, name):
-#     print(f"converting url {url}")
-#
-#     dt = datetime.fromisoformat("1905-04-01")
-#     start_datetime = dt
-#     end_datetime = datetime.fromisoformat("2016-07-05")
-#     output_path = f"../data/{name}.json"
-#
-#     with rasterio.open(url) as src:
-#         proj_bounds = list(src.bounds)
-#         left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, "EPSG:4326", *src.bounds)
-#         polygon = mapping(Polygon([
-#             [left, bottom],
-#             [right, bottom],
-#             [right, top],
-#             [left, top],
-#             [left, bottom]
-#         ]))
-#
-#         item = pystac.Item(
-#             id="bdod-stac-item",
-#             geometry=polygon,
-#             bbox=[left, bottom, right, top],
-#             datetime=dt,
-#             start_datetime=start_datetime,
-#             end_datetime=end_datetime,
-#             properties={ # These properties are optional, but can speed up the loading of the data.
-#                 "proj:epsg": src.crs.to_epsg(),
-#                 "proj:shape": src.shape, # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
-#                 "proj:bbox": proj_bounds,
-#             },
-#             stac_extensions=[
-#                 "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-#                 "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
-#             ],
-#             assets={
-#                 "bdod": pystac.Asset(
-#                     href=url,
-#                     title="SoilGrids250m 2.0 - Bulk density aggregated 5000m",
-#                     extra_fields={
-#                         "eo:bands": [ # REQUIRED: define the bands in the eo extension for openEO to be able to load it
-#                             {
-#                                 "name": "bdod-band",
-#                             }
-#                         ],
-#                     }
-#                 )
-#             }
-#         )
-#
-#         item.validate()
-#         item.save_object(dest_href=output_path, include_self_link=False)
+def manage_arguments(arguments):
+    """
+    TODO
+    maybe infer start_datetime from datetime
+    """
+    print(arguments.datetime, arguments.start_datetime, arguments.end_datetime)
 
 
 # base url
@@ -219,18 +181,27 @@ bdod_tiffs = ["bdod_0-5cm_mean_5000.tif",
               "bdod_60-100cm_mean_5000.tif",
               "bdod_100-200cm_mean_5000.tif"]
 bdod_urls = list()
-datetime = datetime.fromisoformat("1905-04-01")
-start_datetime = datetime
-end_datetime = datetime.fromisoformat("2016-07-05")
+output_path = os.path.join("../data/test_catalog", 'stac-collection')
+
+# parser for arguments
+parser = argparse.ArgumentParser(
+    prog='STAC converter',
+    description='converts datasets into collection/items')
+# setup arguments
+parser.add_argument('-d', '--datetime', required=True)
+parser.add_argument('-s', '--start_datetime', required=True)
+parser.add_argument('-e', '--end_datetime', required=True)
+# parse
+args = parser.parse_args()
+# check with some logic
+manage_arguments(args)
 
 for bdod_tiff in bdod_tiffs:
     url = parse.urljoin(bdod_url, bdod_tiff)
     bdod_urls.append(url)
-    # convert_url(url, bdod_tiff)
 
 try:
-    convert = Convert()
-    convert.create_from_urls(urls=bdod_urls, datetime=datetime, start_datetime=start_datetime, end_datetime=end_datetime)
+    convert = Convert(output_path)
+    convert.create_from_urls(urls=bdod_urls, arguments=args)
 except Exception as e:
-    # print(f"An error occurred: {e}")
     print(traceback.format_exc())

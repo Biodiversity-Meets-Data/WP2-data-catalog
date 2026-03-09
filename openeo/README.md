@@ -61,6 +61,6 @@ Use
   - https://data.isric.org/geonetwork/srv/eng/catalog.search#/metadata/b5ca4bb7-7846-48d9-9af9-a0a4a0b94f23
   - https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
 
-TODO:
-
-- create one dataset/collection, each with one item, each with one asset
+```bash
+python test_openeo.py -d "1905-04-01" -s "1905-04-01" -e "2016-07-05"
+```
