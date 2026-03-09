@@ -1,6 +1,7 @@
 import os
 import traceback
 import argparse
+import glob
 from tempfile import TemporaryDirectory
 from urllib import parse
 from urllib.parse import urlparse
@@ -15,13 +16,21 @@ from shapely.geometry import Polygon, mapping, shape
 
 class Convert:
     def __init__(self, arguments):
-        self.arguments = arguments
+        self.date_time = datetime.fromisoformat(arguments.datetime)
+        self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
+        self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
+        self.projection = arguments.projection
 
     def create_from_directory(self, directory_path):
         """TODO: read from filesystem instead of accessing url"""
+        print(f"creating from {directory_path} directory")
+        files = glob.glob("*.tif")
+
+    def create_from_file(self):
+        """TODO"""
 
     def create_from_urls(self, urls: list):
-        print("converting " + str(len(urls)) + " urls")
+        print("creating from " + str(len(urls)) + " urls")
 
         # tmp_dir = TemporaryDirectory()
         # print(f"temp dir {tmp_dir}")
@@ -55,10 +64,11 @@ class Convert:
     def create_items_from_urls(self, urls):
         print("creating items for " + str(len(urls)) + " urls")
         items = list()
+        title = "SoilGrids250m 2.0 - Bulk density aggregated 5000m"
 
         for url in urls:
             print(f"url {url}")
-            item = self.create_item_from_url(url)
+            item = self.create_item_from_url(url, title=title)
             items.append(item)
 
         return items
@@ -113,57 +123,61 @@ class Convert:
 
         return spatial_extent, temporal_extent
 
-    def create_item_from_url(self, url):
-        date_time = datetime.fromisoformat(self.arguments.datetime)
-        start_datetime = datetime.fromisoformat(self.arguments.start_datetime)
-        end_datetime = datetime.fromisoformat(self.arguments.end_datetime)
-        projection = self.arguments.projection
+    def create_item_from_file(self, file_path, title):
+        """TODO"""
+        with rasterio.open(url) as src:
+            filename = os.path.basename(file_path)
+            return self.create_item_from_raster(src=src, filename=filename, href=url, title=title)
 
+    def create_item_from_url(self, url, title):
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
-            proj_bounds = list(src.bounds)
-            left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
-            polygon = mapping(Polygon([
-                [left, bottom],
-                [right, bottom],
-                [right, top],
-                [left, top],
-                [left, bottom]
-            ]))
+            return self.create_item_from_raster(src=src, filename=filename, href=url, title=title)
 
-            item = pystac.Item(
-                id=filename,
-                geometry=polygon,
-                bbox=[left, bottom, right, top],
-                datetime=date_time,
-                start_datetime=start_datetime,
-                end_datetime=end_datetime,
-                properties={  # These properties are optional, but can speed up the loading of the data.
-                    "proj:epsg": src.crs.to_epsg(),
-                    "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
-                    "proj:bbox": proj_bounds,
-                },
-                stac_extensions=[
-                    "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-                    "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
-                ],
-                assets={
-                    "bdod": pystac.Asset(
-                        href=url,
-                        title="SoilGrids250m 2.0 - Bulk density aggregated 5000m",
-                        extra_fields={
-                            "eo:bands": [ # REQUIRED: define the bands in the eo extension for openEO to be able to load it
-                                {
-                                    "name": "bdod-band",
-                                }
-                            ],
-                        }
-                    )
-                }
-            )
+    def create_item_from_raster(self, src, filename, href, title):
+        proj_bounds = list(src.bounds)
+        left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, self.projection, *src.bounds)
+        polygon = mapping(Polygon([
+            [left, bottom],
+            [right, bottom],
+            [right, top],
+            [left, top],
+            [left, bottom]
+        ]))
 
-            item.validate()
-            return item
+        item = pystac.Item(
+            id=filename,
+            geometry=polygon,
+            bbox=[left, bottom, right, top],
+            datetime=self.date_time,
+            start_datetime=self.start_datetime,
+            end_datetime=self.end_datetime,
+            properties={  # These properties are optional, but can speed up the loading of the data.
+                "proj:epsg": src.crs.to_epsg(),
+                "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
+                "proj:bbox": proj_bounds,
+            },
+            stac_extensions=[
+                "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+            ],
+            assets={
+                "bdod": pystac.Asset(
+                    href=href,
+                    title=title,
+                    extra_fields={
+                        "eo:bands": [ # REQUIRED: define the bands in the eo extension for openEO to be able to load it
+                            {
+                                "name": "bdod-band",
+                            }
+                        ],
+                    }
+                )
+            }
+        )
+
+        item.validate()
+        return item
 
 
 def manage_arguments(arguments):
