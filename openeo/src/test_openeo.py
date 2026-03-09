@@ -14,20 +14,19 @@ from shapely.geometry import Polygon, mapping, shape
 
 
 class Convert:
-    def __init__(self, root_href):
-        self.root_href = root_href
+    def __init__(self, arguments):
+        self.arguments = arguments
 
-    def create_from_urls(self, urls: list, arguments):
+    def create_from_directory(self, directory_path):
+        """TODO: read from filesystem instead of accessing url"""
+
+    def create_from_urls(self, urls: list):
         print("converting " + str(len(urls)) + " urls")
-
-        date_time = datetime.fromisoformat(arguments.datetime)
-        start_datetime = datetime.fromisoformat(arguments.start_datetime)
-        end_datetime = datetime.fromisoformat(arguments.end_datetime)
 
         # tmp_dir = TemporaryDirectory()
         # print(f"temp dir {tmp_dir}")
 
-        items = self.create_items_from_urls(urls, date_time=date_time, start_datetime=start_datetime, end_datetime=end_datetime)
+        items = self.create_items_from_urls(urls)
 
         spatial_extent, temporal_extent = self.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
@@ -39,7 +38,7 @@ class Convert:
         catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
-        catalog.normalize_and_save(root_href=self.root_href, catalog_type=pystac.CatalogType.SELF_CONTAINED)
+        catalog.normalize_and_save(root_href=self.arguments.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_catalog(self, catalog_id: str, description: str):
         print(f"creating catalog {catalog_id}")
@@ -53,14 +52,13 @@ class Convert:
 
         return collection
 
-    def create_items_from_urls(self, urls, date_time, start_datetime, end_datetime):
+    def create_items_from_urls(self, urls):
         print("creating items for " + str(len(urls)) + " urls")
         items = list()
 
         for url in urls:
             print(f"url {url}")
-            # item = self.create_item(entry.id)
-            item = self.create_item_from_url(url, date_time=date_time, start_datetime=start_datetime, end_datetime=end_datetime)
+            item = self.create_item_from_url(url)
             items.append(item)
 
         return items
@@ -115,11 +113,16 @@ class Convert:
 
         return spatial_extent, temporal_extent
 
-    def create_item_from_url(self, url, date_time, start_datetime, end_datetime):
+    def create_item_from_url(self, url):
+        date_time = datetime.fromisoformat(self.arguments.datetime)
+        start_datetime = datetime.fromisoformat(self.arguments.start_datetime)
+        end_datetime = datetime.fromisoformat(self.arguments.end_datetime)
+        projection = self.arguments.projection
+
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
             proj_bounds = list(src.bounds)
-            left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, "EPSG:4326", *src.bounds)
+            left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
             polygon = mapping(Polygon([
                 [left, bottom],
                 [right, bottom],
@@ -137,7 +140,7 @@ class Convert:
                 end_datetime=end_datetime,
                 properties={  # These properties are optional, but can speed up the loading of the data.
                     "proj:epsg": src.crs.to_epsg(),
-                    "proj:shape": src.shape, #  Caveat: this is [height, width] and not [width, height] if you want to set them yourself
+                    "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
                     "proj:bbox": proj_bounds,
                 },
                 stac_extensions=[
@@ -181,7 +184,7 @@ bdod_tiffs = ["bdod_0-5cm_mean_5000.tif",
               "bdod_60-100cm_mean_5000.tif",
               "bdod_100-200cm_mean_5000.tif"]
 bdod_urls = list()
-output_path = os.path.join("../data/test_catalog", 'stac-collection')
+# output_path = os.path.join("../data/output/test_catalog", 'stac-collection')
 
 # parser for arguments
 parser = argparse.ArgumentParser(
@@ -191,6 +194,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument('-d', '--datetime', required=True)
 parser.add_argument('-s', '--start_datetime', required=True)
 parser.add_argument('-e', '--end_datetime', required=True)
+parser.add_argument('-p', '--projection', required=True)
+parser.add_argument('-o', '--output_path', required=True)
 # parse
 args = parser.parse_args()
 # check with some logic
@@ -201,7 +206,7 @@ for bdod_tiff in bdod_tiffs:
     bdod_urls.append(url)
 
 try:
-    convert = Convert(output_path)
-    convert.create_from_urls(urls=bdod_urls, arguments=args)
+    convert = Convert(arguments=args)
+    convert.create_from_urls(urls=bdod_urls)
 except Exception as e:
     print(traceback.format_exc())

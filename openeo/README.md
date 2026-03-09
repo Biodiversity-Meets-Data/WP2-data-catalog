@@ -62,5 +62,5 @@ Use
   - https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
 
 ```bash
-python test_openeo.py -d "1905-04-01" -s "1905-04-01" -e "2016-07-05"
+python test_openeo.py -d "1905-04-01" -s "1905-04-01" -e "2016-07-05" -p "EPSG:4326" -o "../data/output/test_catalog/stac-collection"
 ```
