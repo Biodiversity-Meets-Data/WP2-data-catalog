@@ -21,6 +21,7 @@ class Convert:
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
         self.projection = arguments.projection
         self.output_path = arguments.output_path
+        self.title = arguments.title
 
     def create_from_directory(self, directory_path):
         """TODO: read from filesystem instead of accessing url"""
@@ -65,11 +66,10 @@ class Convert:
     def create_items_from_urls(self, urls):
         print("creating items for " + str(len(urls)) + " urls")
         items = list()
-        title = "SoilGrids250m 2.0 - Bulk density aggregated 5000m"
 
         for url in urls:
             print(f"url {url}")
-            item = self.create_item_from_url(url, title=title)
+            item = self.create_item_from_url(url)
             items.append(item)
 
         return items
@@ -124,18 +124,18 @@ class Convert:
 
         return spatial_extent, temporal_extent
 
-    def create_item_from_file(self, file_path, title):
+    def create_item_from_file(self, file_path):
         """TODO"""
         with rasterio.open(url) as src:
             filename = os.path.basename(file_path)
-            return self.create_item_from_raster(src=src, filename=filename, href=url, title=title)
+            return self.create_item_from_raster(src=src, filename=filename, href=url)
 
-    def create_item_from_url(self, url, title):
+    def create_item_from_url(self, url):
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
-            return self.create_item_from_raster(src=src, filename=filename, href=url, title=title)
+            return self.create_item_from_raster(src=src, filename=filename, href=url)
 
-    def create_item_from_raster(self, src, filename, href, title):
+    def create_item_from_raster(self, src, filename, href):
         proj_bounds = list(src.bounds)
         left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, self.projection, *src.bounds)
         polygon = mapping(Polygon([
@@ -165,7 +165,7 @@ class Convert:
             assets={
                 "bdod": pystac.Asset(
                     href=href,
-                    title=title,
+                    title=self.title,
                     extra_fields={
                         "eo:bands": [ # REQUIRED: define the bands in the eo extension for openEO to be able to load it
                             {
@@ -211,6 +211,7 @@ parser.add_argument('-s', '--start_datetime', required=True)
 parser.add_argument('-e', '--end_datetime', required=True)
 parser.add_argument('-p', '--projection', required=True)
 parser.add_argument('-o', '--output_path', required=True)
+parser.add_argument('-t', '--title', required=True)
 # parse
 args = parser.parse_args()
 # check with some logic
