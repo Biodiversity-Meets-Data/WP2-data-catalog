@@ -20,6 +20,7 @@ class Convert:
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
         self.projection = arguments.projection
+        self.output_path = arguments.output_path
 
     def create_from_directory(self, directory_path):
         """TODO: read from filesystem instead of accessing url"""
@@ -47,7 +48,7 @@ class Convert:
         catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
-        catalog.normalize_and_save(root_href=self.arguments.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
+        catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_catalog(self, catalog_id: str, description: str):
         print(f"creating catalog {catalog_id}")
