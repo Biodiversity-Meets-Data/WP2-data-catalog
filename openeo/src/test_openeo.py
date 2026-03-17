@@ -8,6 +8,7 @@ from urllib import parse
 from urllib.parse import urlparse
 import pystac
 from pystac import Extent
+from pystac.extensions.eo import Band, EOExtension
 import rasterio
 import rasterio.warp
 import shapely
@@ -30,12 +31,12 @@ class Convert:
         else:
             items = self.create_items_from_urls(urls)
 
-        spatial_extent, temporal_extent = self.infer_extents_from(items)
+        spatial_extent, temporal_extent = Convert.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        collection = self.create_collection("test_collection", "test collection", extent=collection_extent)
+        collection = Convert.create_collection("test_collection", "test collection", extent=collection_extent)
         collection.add_items(items)
 
-        catalog = self.create_catalog("test_catalog", "test catalog")
+        catalog = Convert.create_catalog("test_catalog", "test catalog")
         catalog.add_child(collection)
         catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
@@ -67,13 +68,15 @@ class Convert:
             filename = os.path.basename(file_path)
             return self.create_item_from_raster(src=src, filename=filename, href=file_path, title=self.title)
 
-    def create_catalog(self, catalog_id: str, description: str):
+    @staticmethod
+    def create_catalog(catalog_id: str, description: str):
         print(f"creating catalog {catalog_id}")
         catalog = pystac.Catalog(id=catalog_id, description=description)
 
         return catalog
 
-    def create_collection(self, collection_id: str, description: str, extent: Extent):
+    @staticmethod
+    def create_collection(collection_id: str, description: str, extent: Extent):
         print(f"creating collection {collection_id}")
         collection = pystac.Collection(id=collection_id, description=description, extent=extent)
 
@@ -90,7 +93,8 @@ class Convert:
 
         return items
 
-    def create_asset(self, href: str, title: str):
+    @staticmethod
+    def create_asset(href: str, title: str):
         print(f"creating asset {href}")
         asset = pystac.Asset(
             href=href,
@@ -106,7 +110,8 @@ class Convert:
 
         return asset
 
-    def get_bbox_and_footprint(self, raster):
+    @staticmethod
+    def get_bbox_and_footprint(raster):
         with rasterio.open(raster) as r:
             bounds = r.bounds
             bbox = [bounds.left, bounds.bottom, bounds.right, bounds.top]
@@ -120,7 +125,8 @@ class Convert:
 
             return bbox, mapping(footprint)
 
-    def infer_extents_from(self, items: list):
+    @staticmethod
+    def infer_extents_from(items: list):
         print("inferring extents for " + str(len(items)) + " items")
         geometries = list()
         datetimes = list()
@@ -175,12 +181,21 @@ class Convert:
                 "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
             ],
             assets={
-                "bdod": self.create_asset(href=href, title=title)
+                "bdod": Convert.create_asset(href=href, title=title)
             }
         )
 
         item.validate()
         return item
+
+    @staticmethod
+    def create_bands(src):
+        bands = list()
+
+        for band in src:
+            bands.append(Band.create(name=band))
+
+        return bands
 
 
 def manage_arguments(arguments):
@@ -204,6 +219,14 @@ bdod_urls = list()
 for bdod_tiff in bdod_tiffs:
     url = parse.urljoin(bdod_url, bdod_tiff)
     bdod_urls.append(url)
+
+# bands
+band_names = ["0-5cm",
+             "5-15cm",
+             "15-30cm",
+             "30-60cm",
+             "60-100cm",
+             "100-200cm"]
 
 # parser for arguments
 parser = argparse.ArgumentParser(
