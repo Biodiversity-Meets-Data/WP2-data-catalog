@@ -11,6 +11,7 @@ import rasterio
 import rasterio.warp
 import shapely
 from shapely.geometry import Polygon, mapping, shape
+from concurrent.futures import ProcessPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -59,13 +60,24 @@ class Convert:
         files = glob.glob(f"{directory_path}/*.tif")
         logger.info(f"found " + str(len(files)) + " files")
 
-        for file in files:
-            items.append(self.create_item_from_file(file))
+        # for file in files:
+        #     items.append(self.create_item_from_file(file))
+
+        if __name__ == 'convert':
+            items = self.parallel_execution(files)
 
         return items
 
+    def parallel_execution(self, files: list):
+        logger.info("parallel execution")
+        with ProcessPoolExecutor() as executor:
+            items = list(executor.map(self.create_item_from_file, files))
+
+            return items
+
     def create_item_from_file(self, file_path):
         logger.info(f"creating item for file {file_path}")
+        logger.info("currently running on " + str(os.getpid()))
 
         if not os.path.isfile(file_path):
             raise Exception(f"{file_path} is not a file")

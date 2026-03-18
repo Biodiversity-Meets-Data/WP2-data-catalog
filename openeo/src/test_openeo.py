@@ -1,6 +1,6 @@
-import sys
 import argparse
 import logging
+from datetime import datetime
 from urllib import parse
 from convert import Convert
 
@@ -49,10 +49,14 @@ args = parser.parse_args()
 # check with some logic ?
 manage_arguments(args)
 
-try:
-    logger.info("start")
-    convert = Convert(arguments=args)
-    convert.convert(urls=bdod_urls)
-    logger.info("end")
-except Exception as e:
-    logger.exception("global exception")
+if __name__ == "__main__":
+    try:
+        logger.info("start")
+        start = datetime.now()
+        convert = Convert(arguments=args)
+        convert.convert(urls=bdod_urls)
+        end = datetime.now()
+        elapsed = end - start
+        logger.info(f"end in {elapsed}")
+    except Exception as e:
+        logger.exception("global exception")
