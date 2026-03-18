@@ -46,7 +46,7 @@ parser.add_argument('-s', '--start_datetime', required=True)
 parser.add_argument('-t', '--title', required=True)
 # parse
 args = parser.parse_args()
-# check with some logic
+# check with some logic ?
 manage_arguments(args)
 
 try:

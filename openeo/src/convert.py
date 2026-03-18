@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 class Convert:
     max_nbr_tokens = 4
     token_separator = "_"
+    asset_key = "image"
 
     def __init__(self, arguments):
         self.bands_path = arguments.bands_path
@@ -43,7 +44,7 @@ class Convert:
 
         catalog = Convert.create_catalog("test_catalog", "test catalog")
         catalog.add_child(collection)
-        #catalog.describe()
+        # catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
         catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
@@ -99,18 +100,11 @@ class Convert:
         return items
 
     @staticmethod
-    def create_asset(href: str, title: str, band: str):
+    def create_asset(href: str, title: str):
         logger.info(f"creating asset {href}")
         asset = pystac.Asset(
             href=href,
-            title=title,
-            extra_fields={
-                "eo:bands": [  # REQUIRED: define the bands in the eo extension for openEO to be able to load it
-                    {
-                        "name": band,
-                    }
-                ],
-            }
+            title=title
         )
 
         return asset
@@ -188,17 +182,22 @@ class Convert:
             ]
         )
 
-        asset = Convert.create_asset(href=href, title=title, band=band_name)
-        item.add_asset("image", asset)
+        asset = Convert.create_asset(href=href, title=title)
+        # asset must be added to item first
+        item.add_asset(Convert.asset_key, asset)
+        # then add band
+        eo = EOExtension.ext(asset, add_if_missing=True)
+        eo.apply(Convert.create_bands([band_name]))
         item.validate()
+
         return item
 
     @staticmethod
-    def create_bands(src):
+    def create_bands(band_names):
         bands = list()
 
-        for band in src:
-            bands.append(Band.create(name=band))
+        for band_name in band_names:
+            bands.append(Band.create(name=band_name))
 
         return bands
 
