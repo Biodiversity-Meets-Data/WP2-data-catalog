@@ -1,7 +1,11 @@
 import traceback
 import argparse
+import logging
 from urllib import parse
 from convert import Convert
+
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def manage_arguments(arguments):
@@ -9,6 +13,7 @@ def manage_arguments(arguments):
     TODO
     maybe infer start_datetime from datetime
     """
+    print("nothing to be done with arguments")
 
 
 # base url
@@ -47,5 +52,6 @@ manage_arguments(args)
 try:
     convert = Convert(arguments=args)
     convert.convert(urls=bdod_urls)
+    logging.info("done")
 except Exception as e:
-    print(traceback.format_exc())
+    logging.error(traceback.format_exc())

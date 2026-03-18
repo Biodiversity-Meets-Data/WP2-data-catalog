@@ -1,6 +1,7 @@
 import os
 import glob
 import json
+import logging
 from urllib.parse import urlparse
 from datetime import datetime
 import pystac
@@ -40,20 +41,20 @@ class Convert:
 
         catalog = Convert.create_catalog("test_catalog", "test catalog")
         catalog.add_child(collection)
-        catalog.describe()
+        #catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
         catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_from_directory(self, directory_path):
-        print(f"creating items for directory {directory_path}")
+        logging.info(f"creating items for directory {directory_path}")
         items = list()
 
         if not os.path.isdir(directory_path):
             raise Exception(f"{directory_path} is not a directory")
 
         files = glob.glob(f"{directory_path}/*.tif")
-        print(f"found " + str(len(files)) + " files")
+        logging.info(f"found " + str(len(files)) + " files")
 
         for file in files:
             items.append(self.create_item_from_file(file))
@@ -61,7 +62,7 @@ class Convert:
         return items
 
     def create_item_from_file(self, file_path):
-        print(f"creating item for file {file_path}")
+        logging.info(f"creating item for file {file_path}")
 
         if not os.path.isfile(file_path):
             raise Exception(f"{file_path} is not a file")
@@ -72,24 +73,24 @@ class Convert:
 
     @staticmethod
     def create_catalog(catalog_id: str, description: str):
-        print(f"creating catalog {catalog_id}")
+        logging.info(f"creating catalog {catalog_id}")
         catalog = pystac.Catalog(id=catalog_id, description=description)
 
         return catalog
 
     @staticmethod
     def create_collection(collection_id: str, description: str, extent: Extent):
-        print(f"creating collection {collection_id}")
+        logging.info(f"creating collection {collection_id}")
         collection = pystac.Collection(id=collection_id, description=description, extent=extent)
 
         return collection
 
     def create_items_from_urls(self, urls):
-        print("creating items for " + str(len(urls)) + " urls")
+        logging.info("creating items for " + str(len(urls)) + " urls")
         items = list()
 
         for url in urls:
-            print(f"url {url}")
+            logging.debug(f"url {url}")
             item = self.create_item_from_url(url)
             items.append(item)
 
@@ -97,7 +98,7 @@ class Convert:
 
     @staticmethod
     def create_asset(href: str, title: str, band: str):
-        print(f"creating asset {href}")
+        logging.info(f"creating asset {href}")
         asset = pystac.Asset(
             href=href,
             title=title,
@@ -129,7 +130,7 @@ class Convert:
 
     @staticmethod
     def infer_extents_from(items: list):
-        print("inferring extents for " + str(len(items)) + " items")
+        logging.info("inferring extents for " + str(len(items)) + " items")
         geometries = list()
         datetimes = list()
 
