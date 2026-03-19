@@ -20,6 +20,7 @@ class Convert:
     max_nbr_tokens = 4
     token_separator = "_"
     asset_key = "image"
+    parallelize = False
 
     def __init__(self, arguments):
         self.bands_path = arguments.bands_path
@@ -31,6 +32,7 @@ class Convert:
         self.output_path = arguments.output_path
         self.title = arguments.title
         self.known_bands = Convert.parse_bands(self.bands_path)
+        Convert.parallelize = arguments.multiprocess
 
     def convert(self, urls):
         if self.input_path and os.path.isdir(self.input_path):
@@ -60,11 +62,14 @@ class Convert:
         files = glob.glob(f"{directory_path}/*.tif")
         logger.info(f"found " + str(len(files)) + " files")
 
-        # for file in files:
-        #     items.append(self.create_item_from_file(file))
-
-        if __name__ == 'convert':
-            items = self.parallel_execution(files)
+        if Convert.parallelize is True:
+            logger.info("use parallelization")
+            if __name__ == 'convert':
+                items = self.parallel_execution(files)
+        else:
+            logger.info("no parallelization")
+            for file in files:
+                items.append(self.create_item_from_file(file))
 
         return items
 
