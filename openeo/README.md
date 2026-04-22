@@ -64,11 +64,12 @@ Use
 ```bash
 python test_openeo.py \
 -b "../data/input/soilgrids/bands.json" \
+-c "Soilgrids" \
 -d "1905-04-01" \
 -s "1905-04-01" \
 -e "2016-07-05" \
 -p "EPSG:4326" \
--t "SoilGrids250m 2.0 - Bulk density aggregated 5000m"
--i "../data/input/soilgrids/bdod" \
--o "../data/output/test_catalog/stac-collection"
+-t "SoilGrids250m 2.0 - Bulk density aggregated 5000m" \
+-i "../data/input/soilgrids/highres/bdod" \
+-o "../data/output/test_catalog"
 ```

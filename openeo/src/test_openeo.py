@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(
     description='converts datasets into collection/items')
 # setup arguments
 parser.add_argument('-b', '--bands_path', required=True, help="path of the json file where bands are defined")
+parser.add_argument('-c', '--collection_id', required=True, help="collection identifier")
 parser.add_argument('-d', '--datetime', required=True, help="datetime added to each item")
 parser.add_argument('-e', '--end_datetime', required=True, help="end date of the collection")
 parser.add_argument('-i', '--input_path', help="path of the directory where local files are located. "

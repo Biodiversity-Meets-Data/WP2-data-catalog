@@ -21,9 +21,11 @@ class Convert:
     token_separator = "_"
     asset_key = "image"
     parallelize = False
+    catalog_name = "Soilgrids_catalog"
 
     def __init__(self, arguments):
         self.bands_path = arguments.bands_path
+        self.collection_id = arguments.collection_id
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
@@ -42,10 +44,10 @@ class Convert:
 
         spatial_extent, temporal_extent = Convert.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        collection = Convert.create_collection("test_collection", "test collection", extent=collection_extent)
+        collection = Convert.create_collection(self.collection_id, self.collection_id, extent=collection_extent)
         collection.add_items(items)
 
-        catalog = Convert.create_catalog("test_catalog", "test catalog")
+        catalog = Convert.create_catalog(self.catalog_name, self.catalog_name)
         catalog.add_child(collection)
         # catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
@@ -101,7 +103,7 @@ class Convert:
     @staticmethod
     def create_collection(collection_id: str, description: str, extent: Extent):
         logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id, description=description, extent=extent)
+        collection = pystac.Collection(id=collection_id, description=description, extent=extent, license="toto")
 
         return collection
 
@@ -117,11 +119,12 @@ class Convert:
         return items
 
     @staticmethod
-    def create_asset(href: str, title: str):
+    def create_asset(href: str, title: str, media_type: str):
         logger.info(f"creating asset {href}")
         asset = pystac.Asset(
             href=href,
-            title=title
+            title=title,
+            media_type=media_type
         )
 
         return asset
@@ -199,7 +202,7 @@ class Convert:
             ]
         )
 
-        asset = Convert.create_asset(href=href, title=title)
+        asset = Convert.create_asset(href=href, title=title, media_type=pystac.MediaType.GEOTIFF)
         # asset must be added to item first
         item.add_asset(Convert.asset_key, asset)
         # then add band
