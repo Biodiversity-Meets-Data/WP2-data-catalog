@@ -73,3 +73,37 @@ python test_openeo.py \
 -i "../data/input/soilgrids/highres/bdod" \
 -o "../data/output/test_catalog"
 ```
+
+### Hierarchy
+
+How to structure the catalog, see https://eo-college.org/topics/the-stac-catalog/
+
+One collection per Soilgrids dataset:
+
+```mermaid
+flowchart TD
+
+```
+
+One asset per file:
+
+```mermaid
+flowchart TD
+  C1(Main Catalog) --> C2
+  C1(Main Catalog) --> C3
+  C2(Soilgrids Collection) --> Cat1000
+  C2(Soilgrids Collection) --> Cat5000
+  C3(Other Collection)
+  Cat1000(Catalog 1000) --> I1_bdod
+  Cat1000(Catalog 1000) --> I1_other(Item ...)
+  Cat1000(Catalog 1000) --> I1_cec
+  I1_bdod(Item bdod) --> A1_bdod(Asset 0-5cm)
+  I1_bdod(Item bdod) --> A2_bdod(Asset ...cm)
+  I1_bdod(Item bdod) --> A3_bdod(Asset 100-200cm)
+  I1_cec(Item cec) --> A1_cec(Asset 0-5cm)
+  I1_cec(Item cec) --> A2_cec(Asset ...cm)
+  I1_cec(Item cec) --> A3_cec(Asset 100-200cm)
+  I1_other(Item ...) --> A1_other(Asset ...)
+  Cat5000(Catalog 5000) --> I2_bdod 
+  I2_bdod(Item ...)
+```
