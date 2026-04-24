@@ -7,10 +7,10 @@ import pystac
 from pystac.extensions.eo import EOExtension
 import rasterio
 import rasterio.warp
-from shapely.geometry import Polygon, mapping
 from concurrent.futures import ProcessPoolExecutor
 from src.misc.utils import Utils
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class Convert:
     catalog_name = "Soilgrids_catalog"
 
     def __init__(self, arguments):
-        self.bands_path = arguments.bands_path
+        # self.bands_path = arguments.bands_path
         self.collection_id = arguments.collection_id
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
@@ -30,12 +30,12 @@ class Convert:
         self.input_path = arguments.input_path
         self.output_path = arguments.output_path
         self.title = arguments.title
-        self.known_bands = Utils.parse_bands(self.bands_path)
+        # self.known_bands = Utils.parse_bands(self.bands_path)
         Convert.parallelize = arguments.multiprocess
 
     def convert(self, urls):
         if self.input_path and os.path.isdir(self.input_path):
-            items = self.create_from_directory(self.input_path)
+            items = self.create_items_from_directory(self.input_path)
         else:
             items = self.create_items_from_urls(urls)
 
@@ -51,7 +51,7 @@ class Convert:
         #                            catalog_type=pystac.CatalogType.SELF_CONTAINED)
         catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
-    def create_from_directory(self, directory_path):
+    def create_items_from_directory(self, directory_path):
         logger.info(f"creating items for directory {directory_path}")
         items = list()
 
@@ -107,18 +107,10 @@ class Convert:
             return self.create_item_from_raster(src=src, filename=filename, href=url, title=self.title)
 
     def create_item_from_raster(self, src, filename, href, title):
-        proj_bounds = list(src.bounds)
-        left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, self.projection, *src.bounds)
-        polygon = mapping(Polygon([
-            [left, bottom],
-            [right, bottom],
-            [right, top],
-            [left, top],
-            [left, bottom]
-        ]))
-        band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=self.known_bands)
+        proj_bounds, bbox, polygon = Soilgrids_Utils.extract_meta_data_from_raster(src, self.projection)
+        band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=Soilgrids_Constants.band_names)
 
-        item = Utils.create_item(item_id=filename, polygon=polygon, bbox=[left, bottom, right, top],
+        item = Utils.create_item(item_id=filename, polygon=polygon, bbox=bbox,
                                  datetime=self.date_time, start_datetime=self.start_datetime,
                                  end_datetime=self.end_datetime, src=src, proj_bounds=proj_bounds)
 

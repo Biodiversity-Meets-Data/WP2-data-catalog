@@ -63,7 +63,6 @@ Use
 
 ```bash
 python -m src.test_openeo \ 
-  -b "data/input/soilgrids/bands.json" \ 
   -c "Soilgrids_collection" \ 
   -d "1905-04-01" \ 
   -s "1905-04-01" \ 
