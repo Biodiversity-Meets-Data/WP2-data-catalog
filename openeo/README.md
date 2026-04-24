@@ -71,7 +71,7 @@ python test_openeo.py \
 -p "EPSG:4326" \
 -t "SoilGrids250m 2.0 - Bulk density aggregated 5000m" \
 -i "../data/input/soilgrids/highres/bdod" \
--o "../data/output/test_catalog"
+-o "../data/output/soilgrids/test_catalog"
 ```
 
 ### Hierarchy
@@ -82,10 +82,10 @@ One collection per Soilgrids dataset:
 
 ```mermaid
 flowchart TD
-
+  TBD
 ```
 
-One asset per file:
+One asset per file (depth), one item per variable:
 
 ```mermaid
 flowchart TD

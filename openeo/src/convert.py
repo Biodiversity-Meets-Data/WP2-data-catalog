@@ -1,24 +1,21 @@
 import os
 import glob
-import json
 import logging
 from urllib.parse import urlparse
 from datetime import datetime
 import pystac
-from pystac import Extent
-from pystac.extensions.eo import Band, EOExtension
+from pystac.extensions.eo import EOExtension
 import rasterio
 import rasterio.warp
-import shapely
-from shapely.geometry import Polygon, mapping, shape
+from shapely.geometry import Polygon, mapping
 from concurrent.futures import ProcessPoolExecutor
+from src.misc.utils import Utils
+from src.misc.soilgrids.utils import Utils as S_Utils
 
 logger = logging.getLogger(__name__)
 
 
 class Convert:
-    max_nbr_tokens = 4
-    token_separator = "_"
     asset_key = "image"
     parallelize = False
     catalog_name = "Soilgrids_catalog"
@@ -33,7 +30,7 @@ class Convert:
         self.input_path = arguments.input_path
         self.output_path = arguments.output_path
         self.title = arguments.title
-        self.known_bands = Convert.parse_bands(self.bands_path)
+        self.known_bands = Utils.parse_bands(self.bands_path)
         Convert.parallelize = arguments.multiprocess
 
     def convert(self, urls):
@@ -42,12 +39,12 @@ class Convert:
         else:
             items = self.create_items_from_urls(urls)
 
-        spatial_extent, temporal_extent = Convert.infer_extents_from(items)
+        spatial_extent, temporal_extent = Utils.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        collection = Convert.create_collection(self.collection_id, self.collection_id, extent=collection_extent)
+        collection = Utils.create_collection(self.collection_id, self.collection_id, extent=collection_extent)
         collection.add_items(items)
 
-        catalog = Convert.create_catalog(self.catalog_name, self.catalog_name)
+        catalog = Utils.create_catalog(self.catalog_name, self.catalog_name)
         catalog.add_child(collection)
         # catalog.describe()
         # catalog.normalize_and_save(root_href=os.path.join(tmp_dir.name, 'stac-collection'),
@@ -93,20 +90,6 @@ class Convert:
             filename = os.path.basename(file_path)
             return self.create_item_from_raster(src=src, filename=filename, href=file_path, title=self.title)
 
-    @staticmethod
-    def create_catalog(catalog_id: str, description: str):
-        logger.info(f"creating catalog {catalog_id}")
-        catalog = pystac.Catalog(id=catalog_id, description=description)
-
-        return catalog
-
-    @staticmethod
-    def create_collection(collection_id: str, description: str, extent: Extent):
-        logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id, description=description, extent=extent, license="toto")
-
-        return collection
-
     def create_items_from_urls(self, urls):
         logger.info("creating items for " + str(len(urls)) + " urls")
         items = list()
@@ -117,17 +100,6 @@ class Convert:
             items.append(item)
 
         return items
-
-    @staticmethod
-    def create_asset(href: str, title: str, media_type: str):
-        logger.info(f"creating asset {href}")
-        asset = pystac.Asset(
-            href=href,
-            title=title,
-            media_type=media_type
-        )
-
-        return asset
 
     @staticmethod
     def get_bbox_and_footprint(raster):
@@ -144,29 +116,6 @@ class Convert:
 
             return bbox, mapping(footprint)
 
-    @staticmethod
-    def infer_extents_from(items: list):
-        logger.info("inferring extents for " + str(len(items)) + " items")
-        geometries = list()
-        datetimes = list()
-
-        for item in items:
-            geometries.append(shape(item.geometry))
-            datetimes.append(item.common_metadata.start_datetime)
-            datetimes.append(item.common_metadata.end_datetime)
-
-        # spatial
-        unioned_footprint = shapely.union_all(geometries)
-        collection_bbox = list(unioned_footprint.bounds)
-        spatial_extent = pystac.SpatialExtent(bboxes=[collection_bbox])
-        # temporal
-        sorted_datetimes = sorted(datetimes)
-        first_datetime = sorted_datetimes[0]
-        last_datetime = sorted_datetimes[len(datetimes) - 1]
-        temporal_extent = pystac.TemporalExtent(intervals=[[first_datetime, last_datetime]])
-
-        return spatial_extent, temporal_extent
-
     def create_item_from_url(self, url):
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
@@ -182,7 +131,7 @@ class Convert:
             [left, top],
             [left, bottom]
         ]))
-        band_name = Convert.extract_band_from_name(file_name=filename, known_bands=self.known_bands)
+        band_name = S_Utils.extract_band_from_name(file_name=filename, known_bands=self.known_bands)
 
         item = pystac.Item(
             id=filename,
@@ -202,46 +151,12 @@ class Convert:
             ]
         )
 
-        asset = Convert.create_asset(href=href, title=title, media_type=pystac.MediaType.GEOTIFF)
+        asset = Utils.create_asset(href=href, title=title, media_type=pystac.MediaType.GEOTIFF)
         # asset must be added to item first
         item.add_asset(Convert.asset_key, asset)
         # then add band
         eo = EOExtension.ext(asset, add_if_missing=True)
-        eo.apply(Convert.create_bands([band_name]))
+        eo.apply(Utils.create_bands([band_name]))
         item.validate()
 
         return item
-
-    @staticmethod
-    def create_bands(band_names):
-        bands = list()
-
-        for band_name in band_names:
-            bands.append(Band.create(name=band_name))
-
-        return bands
-
-    @staticmethod
-    def parse_bands(file_path):
-        if not os.path.isfile(file_path):
-            raise Exception(f"{file_path} is not a file")
-
-        with open(file_path) as f:
-            bands = json.load(f)
-
-            return bands
-
-    @staticmethod
-    def extract_band_from_name(file_name: str, known_bands: list):
-        tokens = file_name.split(Convert.token_separator)
-        nbr_tokens = len(tokens)
-
-        if nbr_tokens != Convert.max_nbr_tokens:
-            raise Exception(f"incorrect number of tokens: {nbr_tokens}")
-
-        band = tokens[1]
-
-        if band not in known_bands:
-            raise Exception(f"band {band}: is unknown")
-
-        return band

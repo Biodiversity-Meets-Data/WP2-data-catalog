@@ -2,7 +2,7 @@ import argparse
 import logging
 from datetime import datetime
 from urllib import parse
-from convert import Convert
+from src.convert import Convert
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
