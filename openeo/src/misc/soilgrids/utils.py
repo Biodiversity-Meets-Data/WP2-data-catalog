@@ -19,3 +19,18 @@ class Utils:
             raise Exception(f"band {band}: is unknown")
 
         return band
+
+    @staticmethod
+    def generate_file_name(variable_name: str, band_name: str, resolution: str):
+        return Constants.token_separator.join([variable_name, band_name, "mean", resolution])
+
+    @staticmethod
+    def generate_file_names():
+        file_names = list()
+
+        for variables_name in Constants.variables_names:
+            for band_name in Constants.band_names:
+                for resolution in Constants.resolutions:
+                    file_names.append(Utils.generate_file_name(variables_name, band_name, resolution))
+
+        return file_names

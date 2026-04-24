@@ -50,6 +50,13 @@ class Utils:
         return item
 
     @staticmethod
+    def create_simple_item(item_id: str, bbox, datetime, geometry, properties):
+        logger.info(f"creating simple item {item_id}")
+        item = pystac.Item(id=item_id, bbox=bbox, datetime=datetime, geometry=geometry, properties=properties)
+
+        return item
+
+    @staticmethod
     def create_asset(href: str, title: str, media_type: str):
         logger.info(f"creating asset {href}")
         asset = pystac.Asset(
