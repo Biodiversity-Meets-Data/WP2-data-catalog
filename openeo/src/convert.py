@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 class Convert:
-    asset_key = "image"
     parallelize = False
     catalog_name = "Soilgrids_catalog"
 
@@ -116,7 +115,7 @@ class Convert:
 
         asset = Utils.create_asset(href=href, title=title, media_type=pystac.MediaType.GEOTIFF)
         # asset must be added to item first
-        item.add_asset(Convert.asset_key, asset)
+        item.add_asset(Soilgrids_Constants.asset_key, asset)
         # then add band
         eo = EOExtension.ext(asset, add_if_missing=True)
         eo.apply(Utils.create_bands([band_name]))

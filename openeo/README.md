@@ -81,7 +81,14 @@ One collection per Soilgrids dataset:
 
 ```mermaid
 flowchart TD
-  TBD
+  Cat(Catalog) --> Col1
+  Cat(Catalog) --> Col2(Collection 2)
+  Col1(Collection 1) --> I1_bdod
+  Col1(Collection 1) --> I2_bdod
+  Col1(Collection 1) --> I3_bdod 
+  I1_bdod(Item bdod) --> A1_bdod(Asset 0-5cm)
+  I2_bdod(Item bdod) --> A2_bdod(Asset ...cm)
+  I3_bdod(Item bdod) --> A3_bdod(Asset 100-200cm)
 ```
 
 One asset per file (depth), one item per variable:
@@ -103,6 +110,5 @@ flowchart TD
   I1_cec(Item cec) --> A2_cec(Asset ...cm)
   I1_cec(Item cec) --> A3_cec(Asset 100-200cm)
   I1_other(Item ...) --> A1_other(Asset ...)
-  Cat5000(Catalog 5000) --> I2_bdod 
-  I2_bdod(Item ...)
+  Cat5000(Catalog 5000) --> I2_bdod(Item ...)
 ```
