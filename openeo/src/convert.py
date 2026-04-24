@@ -10,7 +10,7 @@ import rasterio.warp
 from shapely.geometry import Polygon, mapping
 from concurrent.futures import ProcessPoolExecutor
 from src.misc.utils import Utils
-from src.misc.soilgrids.utils import Utils as S_Utils
+from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 
 logger = logging.getLogger(__name__)
 
@@ -101,21 +101,6 @@ class Convert:
 
         return items
 
-    @staticmethod
-    def get_bbox_and_footprint(raster):
-        with rasterio.open(raster) as r:
-            bounds = r.bounds
-            bbox = [bounds.left, bounds.bottom, bounds.right, bounds.top]
-            footprint = Polygon([
-                [bounds.left, bounds.bottom],
-                [bounds.left, bounds.top],
-                [bounds.right, bounds.top],
-                [bounds.right, bounds.bottom],
-                [bounds.left, bounds.bottom]
-            ])
-
-            return bbox, mapping(footprint)
-
     def create_item_from_url(self, url):
         with rasterio.open(url) as src:
             filename = os.path.basename(urlparse(url).path)
@@ -131,25 +116,11 @@ class Convert:
             [left, top],
             [left, bottom]
         ]))
-        band_name = S_Utils.extract_band_from_name(file_name=filename, known_bands=self.known_bands)
+        band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=self.known_bands)
 
-        item = pystac.Item(
-            id=filename,
-            geometry=polygon,
-            bbox=[left, bottom, right, top],
-            datetime=self.date_time,
-            start_datetime=self.start_datetime,
-            end_datetime=self.end_datetime,
-            properties={  # These properties are optional, but can speed up the loading of the data.
-                "proj:epsg": src.crs.to_epsg(),
-                "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
-                "proj:bbox": proj_bounds,
-            },
-            stac_extensions=[
-                "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-                "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
-            ]
-        )
+        item = Utils.create_item(item_id=filename, polygon=polygon, bbox=[left, bottom, right, top],
+                                 datetime=self.date_time, start_datetime=self.start_datetime,
+                                 end_datetime=self.end_datetime, src=src, proj_bounds=proj_bounds)
 
         asset = Utils.create_asset(href=href, title=title, media_type=pystac.MediaType.GEOTIFF)
         # asset must be added to item first

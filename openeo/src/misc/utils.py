@@ -5,7 +5,8 @@ import pystac
 from pystac import Extent
 from pystac.extensions.eo import Band
 import shapely
-from shapely.geometry import shape
+from shapely.geometry import Polygon, mapping, shape
+import rasterio
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,29 @@ class Utils:
         collection = pystac.Collection(id=collection_id, description=description, extent=extent, license="toto")
 
         return collection
+
+    @staticmethod
+    def create_item(item_id: str, polygon, bbox, datetime, start_datetime, end_datetime, src, proj_bounds):
+        logger.info(f"creating item {item_id}")
+        item = pystac.Item(
+            id=item_id,
+            geometry=polygon,
+            bbox=bbox,
+            datetime=datetime,
+            start_datetime=start_datetime,
+            end_datetime=end_datetime,
+            properties={  # These properties are optional, but can speed up the loading of the data.
+                "proj:epsg": src.crs.to_epsg(),
+                "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
+                "proj:bbox": proj_bounds,
+            },
+            stac_extensions=[
+                "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+                "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+            ]
+        )
+
+        return item
 
     @staticmethod
     def create_asset(href: str, title: str, media_type: str):
@@ -77,3 +101,18 @@ class Utils:
         temporal_extent = pystac.TemporalExtent(intervals=[[first_datetime, last_datetime]])
 
         return spatial_extent, temporal_extent
+
+    @staticmethod
+    def get_bbox_and_footprint(raster):
+        with rasterio.open(raster) as r:
+            bounds = r.bounds
+            bbox = [bounds.left, bounds.bottom, bounds.right, bounds.top]
+            footprint = Polygon([
+                [bounds.left, bounds.bottom],
+                [bounds.left, bounds.top],
+                [bounds.right, bounds.top],
+                [bounds.right, bounds.bottom],
+                [bounds.left, bounds.bottom]
+            ])
+
+            return bbox, mapping(footprint)
