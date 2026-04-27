@@ -1,13 +1,6 @@
 import argparse
-import logging
-from datetime import datetime
 from urllib import parse
 from src.convert_single_asset import ConvertSingleAsset
-from src.misc.utils import Utils
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
 
 # base url
 bdod_url = "https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/"
@@ -45,17 +38,5 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
-    try:
-        convert = ConvertSingleAsset(arguments=args)
-        convert.run()
-        # logger.info("start")
-        # start = datetime.now()
-        # # check with some logic ?
-        # Utils.manage_arguments(args)
-        # convert = ConvertSingleAsset(arguments=args)
-        # convert.convert(urls=bdod_urls)
-        # end = datetime.now()
-        # elapsed = end - start
-        # logger.info(f"end in {elapsed}")
-    except Exception as e:
-        logger.exception("global exception")
+    convert = ConvertSingleAsset(arguments=args)
+    convert.run()

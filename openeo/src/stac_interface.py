@@ -18,9 +18,12 @@ class STACInterface:
     def convert(self): raise NotImplementedError
 
     def run(self):
-        logger.info("start")
-        start = datetime.now()
-        self.convert()
-        end = datetime.now()
-        elapsed = end - start
-        logger.info(f"end in {elapsed}")
+        try:
+            logger.info("start")
+            start = datetime.now()
+            self.convert()
+            end = datetime.now()
+            elapsed = end - start
+            logger.info(f"end in {elapsed}")
+        except Exception as e:
+            logger.exception("global exception")

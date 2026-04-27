@@ -21,6 +21,7 @@ class ConvertSingleAsset(STACInterface):
     catalog_name = "Soilgrids_catalog"
 
     def __init__(self, arguments):
+        super().__init__(arguments)
         # self.bands_path = arguments.bands_path
         self.collection_id = arguments.collection_id
         self.date_time = datetime.fromisoformat(arguments.datetime)

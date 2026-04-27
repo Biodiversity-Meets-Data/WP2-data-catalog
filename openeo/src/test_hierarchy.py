@@ -1,11 +1,6 @@
 import argparse
-import logging
-from datetime import datetime
 
 from src.convert_multiple_assets import ConvertMultipleAssets
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
 
 # parser for arguments
 parser = argparse.ArgumentParser(
@@ -22,16 +17,5 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
-    try:
-        convert = ConvertMultipleAssets(arguments=args)
-        convert.run()
-
-        # logger.info("start")
-        # start = datetime.now()
-        # convert = ConvertMultipleAssets(arguments=args)
-        # convert.convert(urls=bdod_urls)
-        # end = datetime.now()
-        # elapsed = end - start
-        # logger.info(f"end in {elapsed}")
-    except Exception as e:
-        logger.exception("global exception")
+    convert = ConvertMultipleAssets(arguments=args)
+    convert.run()

@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class ConvertMultipleAssets(STACInterface):
     def __init__(self, arguments):
+        super().__init__(arguments)
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
