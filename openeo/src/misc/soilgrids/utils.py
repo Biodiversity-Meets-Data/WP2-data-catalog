@@ -28,15 +28,39 @@ class Utils:
 
     @staticmethod
     def generate_file_names():
+        file_names = Utils.generate_file_names_for(Constants.variable_names, Constants.band_names, Constants.resolutions)
+
+        return file_names
+
+    @staticmethod
+    def generate_file_names_for(variable_names: list, band_names: list, resolutions: list):
         file_names = list()
 
-        for variables_name in Constants.variables_names:
-            for band_name in Constants.band_names:
-                for resolution in Constants.resolutions:
+        for variables_name in variable_names:
+            for band_name in band_names:
+                for resolution in resolutions:
                     file_name = Utils.generate_file_name(variables_name, band_name, resolution)
                     file_names.append(file_name + ".tif")
 
         return file_names
+
+    @staticmethod
+    def generate_urls(variable_names: list, band_names: list, resolutions: list):
+        urls = list()
+
+        for variables_name in variable_names:
+            for band_name in band_names:
+                for resolution in resolutions:
+                    urls.append(Utils.generate_url(variables_name, band_name, resolution))
+
+        return urls
+
+    @staticmethod
+    def generate_url(variable_name: str, band_name: str, resolution: str):
+        filename = Utils.generate_file_name(variable_name=variable_name, resolution=resolution, band_name=band_name)
+        url = f"{Constants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
+
+        return url
 
     @staticmethod
     def extract_meta_data_from_raster(src, projection):

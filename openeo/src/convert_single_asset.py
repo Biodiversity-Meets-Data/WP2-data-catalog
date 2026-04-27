@@ -38,6 +38,8 @@ class ConvertSingleAsset(STACInterface):
         if self.input_path and os.path.isdir(self.input_path):
             items = self.create_items_from_directory(self.input_path)
         else:
+            urls = Soilgrids_Utils.generate_urls([Soilgrids_Constants.BDOD_VALUE], Soilgrids_Constants.band_names,
+                                                 [Soilgrids_Constants.RESOLUTION_5000])
             items = self.create_items_from_urls(urls)
 
         spatial_extent, temporal_extent = Utils.infer_extents_from(items)

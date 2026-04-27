@@ -6,6 +6,25 @@ class Constants:
     filename_key = "filename"
     max_nbr_tokens = 4
     token_separator = "_"
-    variables_names = ["bdod", "cec", "cfvo", "clay", "nitrogen", "ocd", "ocs", "phh2o", "sand", "silt", "soc", "wv0010", "wv0033", "wv1500"]
+    TIF_EXTENSION = "tif"
+    soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
+    BDOD_VALUE = "bdod"
+    CEC_VALUE = "cec"
+    CFVO_VALUE = "cfvo"
+    CLAY_VALUE = "clay"
+    NITROGEN_VALUE = "nitrogen"
+    OCD_VALUE = "ocd"
+    OCS_VALUE = "ocs"
+    PHH2O_VALUE = "phh2o"
+    SAND_VALUE = "sand"
+    SILT_VALUE = "silt"
+    SOC_VALUE = "soc"
+    WV0010_VALUE = "wv0010"
+    WV0033_VALUE = "wv0033"
+    WV1500_VALUE = "wv1500"
+    variable_names = [BDOD_VALUE, CEC_VALUE, CFVO_VALUE, CLAY_VALUE, NITROGEN_VALUE, OCD_VALUE, OCS_VALUE, PHH2O_VALUE,
+                      SAND_VALUE, SILT_VALUE, SOC_VALUE, WV0010_VALUE, WV0033_VALUE, WV1500_VALUE]
     band_names = ["0-5cm", "5-15cm", "15-30cm", "30-60cm", "60-100cm", "100-200cm"]
-    resolutions = ["1000", "5000"]
+    RESOLUTION_1000 = "1000"
+    RESOLUTION_5000 = "5000"
+    resolutions = [RESOLUTION_1000, RESOLUTION_5000]
