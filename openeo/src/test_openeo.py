@@ -2,18 +2,11 @@ import argparse
 import logging
 from datetime import datetime
 from urllib import parse
-from src.convert import Convert
+from src.convert_single_asset import ConvertSingleAsset
+from src.misc.utils import Utils
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
-
-
-def manage_arguments(arguments):
-    """
-    TODO
-    maybe infer start_datetime from datetime
-    """
-    logger.debug("nothing to be done with arguments")
 
 
 # base url
@@ -49,17 +42,20 @@ parser.add_argument('-s', '--start_datetime', required=True, help="start date of
 parser.add_argument('-t', '--title', required=True, help="title used in each asset")
 # parse
 args = parser.parse_args()
-# check with some logic ?
-manage_arguments(args)
+
 
 if __name__ == "__main__":
     try:
-        logger.info("start")
-        start = datetime.now()
-        convert = Convert(arguments=args)
-        convert.convert(urls=bdod_urls)
-        end = datetime.now()
-        elapsed = end - start
-        logger.info(f"end in {elapsed}")
+        convert = ConvertSingleAsset(arguments=args)
+        convert.run()
+        # logger.info("start")
+        # start = datetime.now()
+        # # check with some logic ?
+        # Utils.manage_arguments(args)
+        # convert = ConvertSingleAsset(arguments=args)
+        # convert.convert(urls=bdod_urls)
+        # end = datetime.now()
+        # elapsed = end - start
+        # logger.info(f"end in {elapsed}")
     except Exception as e:
         logger.exception("global exception")

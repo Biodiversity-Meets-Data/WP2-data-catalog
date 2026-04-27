@@ -123,3 +123,11 @@ class Utils:
             ])
 
             return bbox, mapping(footprint)
+
+    @staticmethod
+    def manage_arguments(arguments):
+        """
+        TODO
+        maybe infer start_datetime from datetime
+        """
+        logger.debug("nothing special to be done with arguments, yet")

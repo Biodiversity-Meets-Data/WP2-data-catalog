@@ -11,11 +11,12 @@ from concurrent.futures import ProcessPoolExecutor
 from src.misc.utils import Utils
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.stac_interface import STACInterface
 
 logger = logging.getLogger(__name__)
 
 
-class Convert:
+class ConvertSingleAsset(STACInterface):
     parallelize = False
     catalog_name = "Soilgrids_catalog"
 
@@ -30,9 +31,9 @@ class Convert:
         self.output_path = arguments.output_path
         self.title = arguments.title
         # self.known_bands = Utils.parse_bands(self.bands_path)
-        Convert.parallelize = arguments.multiprocess
+        ConvertSingleAsset.parallelize = arguments.multiprocess
 
-    def convert(self, urls):
+    def convert(self, urls=None):
         if self.input_path and os.path.isdir(self.input_path):
             items = self.create_items_from_directory(self.input_path)
         else:
@@ -60,7 +61,7 @@ class Convert:
         files = glob.glob(f"{directory_path}/*.tif")
         logger.info(f"found " + str(len(files)) + " files")
 
-        if Convert.parallelize is True:
+        if ConvertSingleAsset.parallelize is True:
             logger.info("use parallelization")
             if __name__ == 'convert':
                 items = self.parallel_execution(files)
