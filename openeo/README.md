@@ -81,34 +81,36 @@ One collection per Soilgrids dataset:
 
 ```mermaid
 flowchart TD
-  Cat(Catalog) --> Col1
+  Cat(Catalog) --> Col1(Collection 1)
   Cat(Catalog) --> Col2(Collection 2)
-  Col1(Collection 1) --> I1_bdod
-  Col1(Collection 1) --> I2_bdod
-  Col1(Collection 1) --> I3_bdod 
+  Col1 --> I1_bdod
+  Col1 --> I2_bdod
+  Col1 --> I3_bdod 
   I1_bdod(Item bdod) --> A1_bdod(Asset 0-5cm)
   I2_bdod(Item bdod) --> A2_bdod(Asset ...cm)
   I3_bdod(Item bdod) --> A3_bdod(Asset 100-200cm)
+  Col2 --> I_other(Item ...)
+  I_other --> A_other(Asset ...)
 ```
 
 One asset per file (depth), one item per variable:
 
 ```mermaid
 flowchart TD
-  C1(Main Catalog) --> C2
-  C1(Main Catalog) --> C3
-  C2(Soilgrids Collection) --> Cat1000
-  C2(Soilgrids Collection) --> Cat5000
-  C3(Other Collection)
-  Cat1000(Catalog 1000) --> I1_bdod
-  Cat1000(Catalog 1000) --> I1_other(Item ...)
-  Cat1000(Catalog 1000) --> I1_cec
-  I1_bdod(Item bdod) --> A1_bdod(Asset 0-5cm)
-  I1_bdod(Item bdod) --> A2_bdod(Asset ...cm)
-  I1_bdod(Item bdod) --> A3_bdod(Asset 100-200cm)
-  I1_cec(Item cec) --> A1_cec(Asset 0-5cm)
-  I1_cec(Item cec) --> A2_cec(Asset ...cm)
-  I1_cec(Item cec) --> A3_cec(Asset 100-200cm)
-  I1_other(Item ...) --> A1_other(Asset ...)
-  Cat5000(Catalog 5000) --> I2_bdod(Item ...)
+  C1(Main Catalog)
+  C1 --> C2(Soilgrids Collection)
+  C1 --> C3(Other Collection)
+  C2 --> Cat1000(Catalog 1000)
+  C2 --> Cat5000(Catalog 5000)
+  Cat1000 --> I1_bdod(Item bdod)
+  Cat1000 --> I1_other(Item ...)
+  Cat1000 --> I1_cec(Item cec)
+  I1_bdod --> A1_bdod(Asset 0-5cm)
+  I1_bdod --> A2_bdod(Asset ...cm)
+  I1_bdod --> A3_bdod(Asset 100-200cm)
+  I1_cec --> A1_cec(Asset 0-5cm)
+  I1_cec --> A2_cec(Asset ...cm)
+  I1_cec --> A3_cec(Asset 100-200cm)
+  I1_other --> A1_other(Asset ...)
+  Cat5000 --> I2_bdod(Item ...)
 ```

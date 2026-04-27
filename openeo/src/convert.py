@@ -119,6 +119,7 @@ class Convert:
         # then add band
         eo = EOExtension.ext(asset, add_if_missing=True)
         eo.apply(Utils.create_bands([band_name]))
+        # final step
         item.validate()
 
         return item
