@@ -1,5 +1,4 @@
 import argparse
-
 from src.convert_multiple_assets import ConvertMultipleAssets
 
 # parser for arguments

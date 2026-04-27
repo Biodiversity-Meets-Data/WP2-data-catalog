@@ -1,21 +1,5 @@
 import argparse
-from urllib import parse
 from src.convert_single_asset import ConvertSingleAsset
-
-# base url
-bdod_url = "https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/"
-# url to the tiff files
-bdod_tiffs = ["bdod_0-5cm_mean_5000.tif",
-              "bdod_5-15cm_mean_5000.tif",
-              "bdod_15-30cm_mean_5000.tif",
-              "bdod_30-60cm_mean_5000.tif",
-              "bdod_60-100cm_mean_5000.tif",
-              "bdod_100-200cm_mean_5000.tif"]
-bdod_urls = list()
-
-for bdod_tiff in bdod_tiffs:
-    url = parse.urljoin(bdod_url, bdod_tiff)
-    bdod_urls.append(url)
 
 # parser for arguments
 parser = argparse.ArgumentParser(
