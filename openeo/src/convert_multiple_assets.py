@@ -29,8 +29,10 @@ class ConvertMultipleAssets(STACInterface):
         inner_collection = Utils.create_collection("inner_collection", "inner collection")
 
         items = list()
-        proj_bounds, bbox, polygon = Soilgrids_Utils.extract_meta_data_from_raster("....", "EPSG:4326")
-        item = Utils.create_simple_item("item", bbox=bbox, datetime=None, geometry=None, properties=None)
+        # proj_bounds, bbox, polygon = Soilgrids_Utils.extract_meta_data_from_raster("....", "EPSG:4326")
+        # item = Utils.create_simple_item("item", bbox=bbox, datetime=None, geometry=None, properties=None)
+        entries = ConvertMultipleAssets.generate_entries()
+        item = self.create_item_from_rasters("item", entries, self.projection)
         items.append(item)
 
         inner_catalog.add_items(items)
@@ -45,19 +47,13 @@ class ConvertMultipleAssets(STACInterface):
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
         outer_collection = Utils.create_collection("outer_collection", )
 
-        item = pystac.Item()
-        assets = self.create_assets({})
-
-        for asset in assets:
-            item.add_asset(Soilgrids_Constants.asset_key, asset)
-
-    def create_item_from_rasters(self, item_id, entries, projection):
-        srcs = entries.map(lambda entry: entry[Soilgrids_Constants.src_key])
-        geometry, bbox = self.extract_from_srcs(srcs, projection)
+    def create_item_from_rasters(self, item_id: str, entries: list, projection: str):
+        srcs = map(lambda entry: entry[Soilgrids_Constants.src_key], entries)
+        geometry, bbox = ConvertMultipleAssets.extract_from_srcs(srcs, projection)
         item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, bbox=bbox, geometry=geometry, properties={})
 
         # assets must be added to item first
-        assets = self.create_assets(entries)
+        assets = ConvertMultipleAssets.create_assets(entries)
 
         for asset in assets:
             item.add_asset(Soilgrids_Constants.asset_key, asset)
@@ -70,7 +66,21 @@ class ConvertMultipleAssets(STACInterface):
 
         return item
 
-    def create_assets(self, entries: list):
+    @staticmethod
+    def generate_entries():
+        entries = list()
+        urls = Soilgrids_Utils.generate_urls([Soilgrids_Constants.BDOD_VALUE], Soilgrids_Constants.band_names,
+                                             [Soilgrids_Constants.RESOLUTION_5000])
+        for url in urls:
+            entries.append({
+                Soilgrids_Constants.href_key: url,
+                Soilgrids_Constants.title_key:url
+            })
+
+        return entries
+
+    @staticmethod
+    def create_assets(entries: list):
         logger.info(f"creating {str(len(entries))} assets")
         assets = list()
 
@@ -82,7 +92,8 @@ class ConvertMultipleAssets(STACInterface):
 
         return assets
 
-    def extract_from_srcs(self, srcs, projection):
+    @staticmethod
+    def extract_from_srcs(srcs, projection):
         logger.info("extracting from sources")
         geometries = []
 
