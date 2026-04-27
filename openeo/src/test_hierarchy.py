@@ -5,7 +5,7 @@ from src.convert_multiple_assets import ConvertMultipleAssets
 # parser for arguments
 parser = argparse.ArgumentParser(
     prog='STAC converter',
-    description='converts datasets into collection/items')
+    description='converts datasets into collection/items, multiple assets per item')
 # setup arguments
 parser.add_argument('-d', '--datetime', required=True, help="datetime added to each item")
 parser.add_argument('-e', '--end_datetime', required=True, help="end date of the collection")

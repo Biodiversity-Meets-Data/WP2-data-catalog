@@ -20,7 +20,7 @@ for bdod_tiff in bdod_tiffs:
 # parser for arguments
 parser = argparse.ArgumentParser(
     prog='STAC converter',
-    description='converts datasets into collection/items')
+    description='converts datasets into collection/items, single asset per item')
 # setup arguments
 # parser.add_argument('-b', '--bands_path', required=True, help="path of the json file where bands are defined")
 parser.add_argument('-c', '--collection_id', required=True, help="collection identifier")
