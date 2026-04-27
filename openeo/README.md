@@ -62,7 +62,7 @@ Use
   - https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
 
 ```bash
-python -m src.test_openeo \ 
+python -m src.test_basic \ 
   -c "Soilgrids_collection" \ 
   -d "1905-04-01" \ 
   -s "1905-04-01" \ 
