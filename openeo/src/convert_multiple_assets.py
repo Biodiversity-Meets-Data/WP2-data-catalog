@@ -29,20 +29,21 @@ class ConvertMultipleAssets(STACInterface):
         items = list()
         entries = ConvertMultipleAssets.generate_entries()
         item = self.create_item_from_rasters("item_with_multiple_assets", entries, self.projection)
-        # logger.info(item.to_dict())
         items.append(item)
         spatial_extent, temporal_extent = Utils.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        logger.info(collection_extent)
 
-        # top to bottom
+        # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
         soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
-        soilgrids_collection = Utils.create_collection("soilgrids_collection", "below catalog", extent=collection_extent)
+        soilgrids_collection = Utils.create_collection("soilgrids_collection", "below catalog",
+                                                       extent=collection_extent, license="CC BY 4.0")
 
+        # add bottom to top
         soilgrids_collection.add_items(items)
         soilgrids_catalog.add_child(soilgrids_collection)
         top_catalog.add_child(soilgrids_catalog)
+
         # top_catalog.describe()
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 

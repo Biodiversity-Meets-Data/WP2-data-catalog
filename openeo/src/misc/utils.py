@@ -20,9 +20,9 @@ class Utils:
         return catalog
 
     @staticmethod
-    def create_collection(collection_id: str, description: str, extent: Extent):
+    def create_collection(collection_id: str, description: str, extent: Extent, license: str | None = None):
         logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id, description=description, extent=extent, license="toto")
+        collection = pystac.Collection(id=collection_id, description=description, extent=extent, license=license)
 
         return collection
 
