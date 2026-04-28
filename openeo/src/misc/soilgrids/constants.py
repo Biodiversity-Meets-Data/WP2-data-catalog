@@ -8,6 +8,7 @@ class Constants:
     token_separator = "_"
     TIF_EXTENSION = "tif"
     soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
+    DEFAULT_PROJECTION = "EPSG:4326"
     BDOD_VALUE = "bdod"
     CEC_VALUE = "cec"
     CFVO_VALUE = "cfvo"

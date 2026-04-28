@@ -1,5 +1,8 @@
+import os
 import logging
+from urllib.parse import urlparse
 import pystac
+from pystac.extensions.eo import EOExtension
 from datetime import datetime
 import rasterio
 import rasterio.warp
@@ -19,48 +22,49 @@ class ConvertMultipleAssets(STACInterface):
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
-        self.projection = arguments.projection
-        self.input_path = arguments.input_path
+        self.projection = Soilgrids_Constants.DEFAULT_PROJECTION
+        self.output_path = arguments.output_path
 
     def convert(self):
-        top_catalog = Utils.create_catalog("top_catalog", description="at the top")
-        top_collection = Utils.create_collection("top_collection", "below catalog", extent=None)
-        inner_catalog = Utils.create_catalog("inner_catalog", "below collection")
-        inner_collection = Utils.create_collection("inner_collection", "inner collection")
-
         items = list()
-        # proj_bounds, bbox, polygon = Soilgrids_Utils.extract_meta_data_from_raster("....", "EPSG:4326")
-        # item = Utils.create_simple_item("item", bbox=bbox, datetime=None, geometry=None, properties=None)
         entries = ConvertMultipleAssets.generate_entries()
-        item = self.create_item_from_rasters("item", entries, self.projection)
+        item = self.create_item_from_rasters("item_with_multiple_assets", entries, self.projection)
+        # logger.info(item.to_dict())
         items.append(item)
-
-        inner_catalog.add_items(items)
-
-        top_collection.add_child(inner_collection)
-        # top_collection.add_child(inner_catalog)
-        top_catalog.add_child(top_collection)
-
-        top_catalog.normalize_and_save(root_href="toto", catalog_type=pystac.CatalogType.SELF_CONTAINED)
-        items = self.create_from_directory(self.input_path)
         spatial_extent, temporal_extent = Utils.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        outer_collection = Utils.create_collection("outer_collection", )
+        logger.info(collection_extent)
+
+        # top to bottom
+        top_catalog = Utils.create_catalog("top_catalog", description="at the top")
+        soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
+        soilgrids_collection = Utils.create_collection("soilgrids_collection", "below catalog", extent=collection_extent)
+
+        soilgrids_collection.add_items(items)
+        soilgrids_catalog.add_child(soilgrids_collection)
+        top_catalog.add_child(soilgrids_catalog)
+        # top_catalog.describe()
+        top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_item_from_rasters(self, item_id: str, entries: list, projection: str):
-        srcs = map(lambda entry: entry[Soilgrids_Constants.src_key], entries)
-        geometry, bbox = ConvertMultipleAssets.extract_from_srcs(srcs, projection)
-        item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, bbox=bbox, geometry=geometry, properties={})
+        logger.info("create item from rasters")
+        hrefs = map(lambda entry: entry[Soilgrids_Constants.href_key], entries)
+        geometry, bbox = ConvertMultipleAssets.extract_from_urls(hrefs, projection)
+        item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
+                                        end_datetime=self.end_datetime, bbox=bbox, geometry=geometry, properties={})
+        band_names = list()
 
         # assets must be added to item first
-        assets = ConvertMultipleAssets.create_assets(entries)
+        for entry in entries:
+            url = entry[Soilgrids_Constants.href_key]
+            filename = os.path.basename(urlparse(url).path)
+            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=Soilgrids_Constants.band_names)
+            band_names.append(band_name)
+            asset = ConvertMultipleAssets.create_asset(entry)
+            item.add_asset(filename, asset)
 
-        for asset in assets:
-            item.add_asset(Soilgrids_Constants.asset_key, asset)
-
-        # then add band
-        # eo = EOExtension.ext(asset, add_if_missing=True)
-        # eo.apply(Utils.create_bands([band_name]))
+        # eo = EOExtension.ext(item, add_if_missing=True)
+        # eo.apply(bands=Utils.create_bands(band_names))
 
         item.validate()
 
@@ -68,16 +72,25 @@ class ConvertMultipleAssets(STACInterface):
 
     @staticmethod
     def generate_entries():
+        logger.info("generate entries")
         entries = list()
         urls = Soilgrids_Utils.generate_urls([Soilgrids_Constants.BDOD_VALUE], Soilgrids_Constants.band_names,
-                                             [Soilgrids_Constants.RESOLUTION_5000])
+                                             [Soilgrids_Constants.RESOLUTION_1000])
         for url in urls:
             entries.append({
                 Soilgrids_Constants.href_key: url,
-                Soilgrids_Constants.title_key:url
+                Soilgrids_Constants.title_key: url
             })
 
         return entries
+
+    @staticmethod
+    def create_asset(entry):
+        asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
+                                   title=entry[Soilgrids_Constants.title_key],
+                                   media_type=pystac.MediaType.GEOTIFF)
+
+        return asset
 
     @staticmethod
     def create_assets(entries: list):
@@ -85,22 +98,21 @@ class ConvertMultipleAssets(STACInterface):
         assets = list()
 
         for entry in entries:
-            asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
-                                       title=entry[Soilgrids_Constants.title_key],
-                                       media_type=pystac.MediaType.GEOTIFF)
+            asset = ConvertMultipleAssets.create_asset(entry)
             assets.append(asset)
 
         return assets
 
     @staticmethod
-    def extract_from_srcs(srcs, projection):
+    def extract_from_urls(urls, projection):
         logger.info("extracting from sources")
         geometries = []
 
-        for src in srcs:
-            left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
-            geom = box(left, bottom, right, top)
-            geometries.append(geom)
+        for url in urls:
+            with rasterio.open(url) as src:
+                left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
+                geom = box(left, bottom, right, top)
+                geometries.append(geom)
 
         merged_geom = unary_union(geometries)
         geometry = mapping(merged_geom)

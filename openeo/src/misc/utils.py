@@ -20,7 +20,7 @@ class Utils:
         return catalog
 
     @staticmethod
-    def create_collection(collection_id: str, description: str, extent: Extent | None = None):
+    def create_collection(collection_id: str, description: str, extent: Extent):
         logger.info(f"creating collection {collection_id}")
         collection = pystac.Collection(id=collection_id, description=description, extent=extent, license="toto")
 
@@ -50,9 +50,10 @@ class Utils:
         return item
 
     @staticmethod
-    def create_simple_item(item_id: str, bbox, datetime, geometry, properties):
+    def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties):
         logger.info(f"creating simple item {item_id}")
-        item = pystac.Item(id=item_id, bbox=bbox, datetime=datetime, geometry=geometry, properties=properties)
+        item = pystac.Item(id=item_id, bbox=bbox, datetime=datetime, start_datetime=start_datetime,
+                           end_datetime=end_datetime, geometry=geometry, properties=properties)
 
         return item
 
