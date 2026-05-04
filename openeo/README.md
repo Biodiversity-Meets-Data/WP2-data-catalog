@@ -115,3 +115,7 @@ flowchart TD
   I1_other --> A1_other(Assets ...)
   C3_2 --> I2_bdod(Items ...)
 ```
+
+### best practice
+
+see https://github.com/radiantearth/stac-spec/blob/master/best-practices.md

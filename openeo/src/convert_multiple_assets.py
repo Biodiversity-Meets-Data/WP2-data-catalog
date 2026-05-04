@@ -58,7 +58,8 @@ class ConvertMultipleAssets(STACInterface):
         for entry in entries:
             url = entry[Soilgrids_Constants.href_key]
             filename = os.path.basename(urlparse(url).path)
-            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=Soilgrids_Constants.band_names)
+            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename,
+                                                               known_bands=Soilgrids_Constants.band_names)
             asset = ConvertMultipleAssets.create_asset(entry)
             item.add_asset(filename, asset)
             eo = EOExtension.ext(asset, add_if_missing=True)
@@ -77,7 +78,7 @@ class ConvertMultipleAssets(STACInterface):
         for url in urls:
             entries.append({
                 Soilgrids_Constants.href_key: url,
-                Soilgrids_Constants.title_key: url
+                Soilgrids_Constants.title_key: os.path.basename(urlparse(url).path)
             })
 
         return entries
