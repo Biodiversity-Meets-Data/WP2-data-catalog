@@ -73,7 +73,7 @@ class Utils:
         bands = list()
 
         for band_name in band_names:
-            bands.append(Band.create(name=band_name))
+            bands.append(Band.create(name=band_name, description=band_name))
 
         return bands
 
