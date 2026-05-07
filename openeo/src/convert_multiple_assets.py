@@ -3,6 +3,7 @@ import logging
 from urllib.parse import urlparse
 import pystac
 from datetime import datetime
+from pystac.extensions.eo import EOExtension
 import rasterio
 import rasterio.warp
 from shapely.geometry import box, mapping
@@ -67,16 +68,18 @@ class ConvertMultipleAssets(STACInterface):
         geometry, bbox = ConvertMultipleAssets.extract_from_urls(hrefs, projection)
         item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
                                         end_datetime=self.end_datetime, bbox=bbox, geometry=geometry, properties={})
-        band_names = list()
 
         # assets must be added to item first
         for entry in entries:
             url = entry[Soilgrids_Constants.href_key]
             filename = os.path.basename(urlparse(url).path)
-            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename, known_bands=Soilgrids_Constants.band_names)
-            band_names.append(band_name)
+            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename,
+                                                               known_bands=Soilgrids_Constants.band_names)
             asset = ConvertMultipleAssets.create_asset(entry)
             item.add_asset(filename, asset)
+
+            eo = EOExtension.ext(asset, add_if_missing=True)
+            eo.apply(bands=Utils.create_bands([band_name]))
 
         item.validate()
 
@@ -91,7 +94,7 @@ class ConvertMultipleAssets(STACInterface):
         for url in urls:
             entries.append({
                 Soilgrids_Constants.href_key: url,
-                Soilgrids_Constants.title_key: url,
+                Soilgrids_Constants.title_key: os.path.basename(urlparse(url).path),
                 Soilgrids_Constants.resolution_key: resolution
             })
 

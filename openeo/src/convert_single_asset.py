@@ -121,7 +121,7 @@ class ConvertSingleAsset(STACInterface):
         # asset must be added to item first
         item.add_asset(Soilgrids_Constants.asset_key, asset)
         # then add band
-        eo = EOExtension.ext(item, add_if_missing=True)
+        eo = EOExtension.ext(asset, add_if_missing=True)
         eo.apply(bands=Utils.create_bands([band_name]))
         # final step
         item.validate()
