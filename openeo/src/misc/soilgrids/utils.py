@@ -48,9 +48,9 @@ class Utils:
     def generate_urls(variable_names: list, band_names: list, resolutions: list):
         urls = list()
 
-        for variables_name in variable_names:
-            for band_name in band_names:
-                for resolution in resolutions:
+        for resolution in resolutions:
+            for variables_name in variable_names:
+                for band_name in band_names:
                     urls.append(Utils.generate_url(variables_name, band_name, resolution))
 
         return urls

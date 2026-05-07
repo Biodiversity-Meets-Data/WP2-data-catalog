@@ -2,7 +2,6 @@ import os
 import logging
 from urllib.parse import urlparse
 import pystac
-from pystac.extensions.eo import EOExtension
 from datetime import datetime
 import rasterio
 import rasterio.warp
@@ -26,24 +25,39 @@ class ConvertMultipleAssets(STACInterface):
         self.output_path = arguments.output_path
 
     def convert(self):
-        items = list()
-        entries = ConvertMultipleAssets.generate_entries()
-        item = self.create_item_from_rasters("item_with_multiple_assets", entries, self.projection)
-        items.append(item)
-        spatial_extent, temporal_extent = Utils.infer_extents_from(items)
-        collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
         soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
-        soilgrids_collection = Utils.create_collection("soilgrids_collection", "below catalog",
-                                                       extent=collection_extent, license="CC BY 4.0")
 
-        # add bottom to top
-        soilgrids_collection.add_items(items)
-        soilgrids_catalog.add_child(soilgrids_collection)
+        # resolutions = [Soilgrids_Constants.RESOLUTION_1000]
+        resolutions = Soilgrids_Constants.resolutions
+        variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
+
+        for resolution in resolutions:
+            items = list()
+
+            for variable_name in variable_names:
+                entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
+                item = self.create_item_from_rasters(f"{variable_name}_{resolution}", entries, self.projection)
+                items.append(item)
+
+            # gather extents
+            spatial_extent, temporal_extent = Utils.infer_extents_from(items)
+            collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
+
+            # collection level
+            collection_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
+            collection_license="CC BY 4.0"
+
+            soilgrids_collection = Utils.create_collection(f"collection_{resolution}", "below catalog",
+                                                           extent=collection_extent, license=collection_license,
+                                                           keywords=collection_keywords)
+
+            # add bottom to top
+            soilgrids_collection.add_items(items)
+            soilgrids_catalog.add_child(soilgrids_collection)
+
         top_catalog.add_child(soilgrids_catalog)
-
         # top_catalog.describe()
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
@@ -64,23 +78,21 @@ class ConvertMultipleAssets(STACInterface):
             asset = ConvertMultipleAssets.create_asset(entry)
             item.add_asset(filename, asset)
 
-        # eo = EOExtension.ext(item, add_if_missing=True)
-        # eo.apply(bands=Utils.create_bands(band_names))
-
         item.validate()
 
         return item
 
     @staticmethod
-    def generate_entries():
-        logger.info("generate entries")
+    def generate_entries(resolution: str, variable_names: list[str]):
+        logger.info(f"generate entries for resolution {resolution}")
         entries = list()
-        urls = Soilgrids_Utils.generate_urls([Soilgrids_Constants.BDOD_VALUE], Soilgrids_Constants.band_names,
-                                             [Soilgrids_Constants.RESOLUTION_1000])
+        urls = Soilgrids_Utils.generate_urls(variable_names, Soilgrids_Constants.band_names, [resolution])
+
         for url in urls:
             entries.append({
                 Soilgrids_Constants.href_key: url,
-                Soilgrids_Constants.title_key: url
+                Soilgrids_Constants.title_key: url,
+                Soilgrids_Constants.resolution_key: resolution
             })
 
         return entries

@@ -3,6 +3,7 @@ class Constants:
     src_key = "src"
     href_key = "href"
     title_key = "title"
+    resolution_key = "resolution"
     filename_key = "filename"
     max_nbr_tokens = 4
     token_separator = "_"
