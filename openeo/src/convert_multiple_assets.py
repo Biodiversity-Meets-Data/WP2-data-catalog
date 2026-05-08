@@ -1,6 +1,7 @@
 import os
 import logging
 from urllib.parse import urlparse
+from pathlib import Path
 import pystac
 from datetime import datetime
 from pystac.extensions.eo import EOExtension
@@ -39,7 +40,7 @@ class ConvertMultipleAssets(STACInterface):
 
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item = self.create_item_from_rasters(f"{variable_name}_{resolution}", entries, self.projection)
+                item = self.create_item_from_rasters(f"item_{variable_name}_{resolution}", entries, self.projection)
                 items.append(item)
 
             # gather extents
@@ -50,7 +51,8 @@ class ConvertMultipleAssets(STACInterface):
             collection_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
             collection_license="CC BY 4.0"
 
-            soilgrids_collection = Utils.create_collection(f"collection_{resolution}", "below catalog",
+            soilgrids_collection = Utils.create_collection(f"collection_{resolution}",
+                                                           f"this a soilgrids collection at a specific resolution ({resolution})",
                                                            extent=collection_extent, license=collection_license,
                                                            keywords=collection_keywords)
 
@@ -71,12 +73,13 @@ class ConvertMultipleAssets(STACInterface):
 
         # assets must be added to item first
         for entry in entries:
-            url = entry[Soilgrids_Constants.href_key]
-            filename = os.path.basename(urlparse(url).path)
-            band_name = Soilgrids_Utils.extract_band_from_name(file_name=filename,
+            title = entry[Soilgrids_Constants.title_key]
+            # url = entry[Soilgrids_Constants.href_key]
+            # filename = os.path.basename(urlparse(url).path)
+            band_name = Soilgrids_Utils.extract_band_from_name(file_name=title,
                                                                known_bands=Soilgrids_Constants.band_names)
             asset = ConvertMultipleAssets.create_asset(entry)
-            item.add_asset(filename, asset)
+            item.add_asset(title, asset)
 
             eo = EOExtension.ext(asset, add_if_missing=True)
             eo.apply(bands=Utils.create_bands([band_name]))
@@ -94,7 +97,7 @@ class ConvertMultipleAssets(STACInterface):
         for url in urls:
             entries.append({
                 Soilgrids_Constants.href_key: url,
-                Soilgrids_Constants.title_key: os.path.basename(urlparse(url).path),
+                Soilgrids_Constants.title_key: Path(os.path.basename(urlparse(url).path)).stem,
                 Soilgrids_Constants.resolution_key: resolution
             })
 
