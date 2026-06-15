@@ -7,6 +7,7 @@ from datetime import datetime
 from pystac.extensions.eo import EOExtension
 import rasterio
 import rasterio.warp
+from rasterio import RasterioIOError
 from shapely.geometry import box, mapping
 from shapely.ops import unary_union
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
@@ -32,8 +33,9 @@ class ConvertMultipleAssets(STACInterface):
         soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
 
         # resolutions = [Soilgrids_Constants.RESOLUTION_1000]
-        resolutions = Soilgrids_Constants.resolutions
-        variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
+        resolutions = Soilgrids_Constants.RESOLUTIONS
+        # variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
+        variable_names = Soilgrids_Constants.VARIABLE_NAMES
 
         for resolution in resolutions:
             items = list()
@@ -41,7 +43,11 @@ class ConvertMultipleAssets(STACInterface):
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
                 item = self.create_item_from_rasters(f"item_{variable_name}_{resolution}", entries, self.projection)
-                items.append(item)
+
+                if item is None:
+                    logger.warning(f"no item for {variable_name}")
+                else:
+                    items.append(item)
 
             # gather extents
             spatial_extent, temporal_extent = Utils.infer_extents_from(items)
@@ -67,29 +73,38 @@ class ConvertMultipleAssets(STACInterface):
     def create_item_from_rasters(self, item_id: str, entries: list, projection: str):
         logger.info("create item from rasters")
         hrefs = map(lambda entry: entry[Soilgrids_Constants.href_key], entries)
-        geometry, bbox = ConvertMultipleAssets.extract_from_urls(hrefs, projection)
-        item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
-                                        end_datetime=self.end_datetime, bbox=bbox, geometry=geometry, properties={})
+        geometry, bbox, missing_urls = ConvertMultipleAssets.extract_from_urls(hrefs, projection)
 
-        # assets must be added to item first
-        for entry in entries:
-            title = entry[Soilgrids_Constants.title_key]
-            # url = entry[Soilgrids_Constants.href_key]
-            # filename = os.path.basename(urlparse(url).path)
-            band_name = Soilgrids_Utils.extract_band_from_name(file_name=title,
-                                                               known_bands=Soilgrids_Constants.band_names)
-            asset = ConvertMultipleAssets.create_asset(entry)
-            item.add_asset(title, asset)
+        if len(missing_urls) == len(entries):
+            logger.warning(f"nothing to be done for {item_id}")
+            return None
+        else:
+            item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
+                                            end_datetime=self.end_datetime, bbox=bbox, geometry=geometry, properties={})
 
-            eo = EOExtension.ext(asset, add_if_missing=True)
-            eo.apply(bands=Utils.create_bands([band_name]))
+            # assets must be added to item first
+            for entry in entries:
+                url = entry[Soilgrids_Constants.href_key]
 
-        item.validate()
+                if url in missing_urls:
+                    logger.warning(f"skipping {url}")
+                else:
+                    title = entry[Soilgrids_Constants.title_key]
+                    # filename = os.path.basename(urlparse(url).path)
+                    band_name = Soilgrids_Utils.extract_band_from_name(file_name=title,
+                                                                       known_bands=Soilgrids_Constants.band_names)
+                    asset = ConvertMultipleAssets.create_asset(entry)
+                    item.add_asset(title, asset)
 
-        return item
+                    eo = EOExtension.ext(asset, add_if_missing=True)
+                    eo.apply(bands=Utils.create_bands([band_name]))
+
+            item.validate()
+            return item
 
     @staticmethod
     def generate_entries(resolution: str, variable_names: list[str]):
+        """generates a wrapper"""
         logger.info(f"generate entries for resolution {resolution}")
         entries = list()
         urls = Soilgrids_Utils.generate_urls(variable_names, Soilgrids_Constants.band_names, [resolution])
@@ -126,15 +141,21 @@ class ConvertMultipleAssets(STACInterface):
     def extract_from_urls(urls, projection):
         logger.info("extracting from sources")
         geometries = []
+        missing = []
 
         for url in urls:
-            with rasterio.open(url) as src:
-                left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
-                geom = box(left, bottom, right, top)
-                geometries.append(geom)
+            logger.info(f"extracting from {url}")
+            try:
+                with rasterio.open(url) as src:
+                    left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
+                    geom = box(left, bottom, right, top)
+                    geometries.append(geom)
+            except RasterioIOError:
+                logger.error(f"CANNOT OPEN {url}")
+                missing.append(url)
 
         merged_geom = unary_union(geometries)
         geometry = mapping(merged_geom)
         bbox = list(merged_geom.bounds)
 
-        return geometry, bbox
+        return geometry, bbox, missing

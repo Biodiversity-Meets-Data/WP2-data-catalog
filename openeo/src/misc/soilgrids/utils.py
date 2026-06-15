@@ -28,7 +28,7 @@ class Utils:
 
     @staticmethod
     def generate_file_names():
-        file_names = Utils.generate_file_names_for(Constants.variable_names, Constants.band_names, Constants.resolutions)
+        file_names = Utils.generate_file_names_for(Constants.VARIABLE_NAMES, Constants.band_names, Constants.RESOLUTIONS)
 
         return file_names
 

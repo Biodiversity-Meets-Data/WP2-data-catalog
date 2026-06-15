@@ -71,6 +71,13 @@ python -m src.test_basic \
   -t "SoilGrids250m 2.0 - Bulk density aggregated 5000m" \ 
   -i "data/input/soilgrids/highres/bdod" \ 
   -o "data/output/soilgrids/test_catalog/"
+  
+# simpler version for multiple assets per item
+python -m src.test_multiple_assets \ 
+  -d "1905-04-01" \ 
+  -s "1905-04-01" \ 
+  -e "2016-07-05" \  
+  -o "data/output/soilgrids/test_nested_catalog/"
 ```
 
 ### Hierarchy
