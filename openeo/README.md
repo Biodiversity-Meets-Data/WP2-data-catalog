@@ -130,11 +130,11 @@ see https://github.com/radiantearth/stac-spec/blob/master/best-practices.md
 ### Create a collection
 
 ```bash
-curl -X POST <SERVER> -H 'Content-Type: application/json' -d '<json>'
+curl -X POST <SERVER>/collections -H 'Content-Type: application/json' -d '<json>'
 ```
 
-where <SERVER> is : https://bmd-stac.dryrun.link/collections
-where <json> is :
+where <SERVER> is : https://bmd-stac.dryrun.link
+where <json> is the payload, contains the API key, and is :
 
 ```json
 {
@@ -188,5 +188,131 @@ where <json> is :
     "wv0033",
     "wv1500"
   ]
+}
+```
+
+## Create an item for a collection
+
+```bash
+curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: application/json' -d '<json>'
+```
+
+```json
+{
+  "type": "Feature",
+  "stac_version": "1.1.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+    "https://stac-extensions.github.io/authentication/v1.1.0/schema.json"
+  ],
+  "auth:refs": "fb0f7505337ed43a81971d9c",
+  "id": "item_bdod_1000m",
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [
+          -179.77911370816287,
+          -55.982325033023535
+        ],
+        [
+          -179.77911370816287,
+          82.71928405344526
+        ],
+        [
+          179.56061669726006,
+          82.71928405344526
+        ],
+        [
+          179.56061669726006,
+          -55.982325033023535
+        ],
+        [
+          -179.77911370816287,
+          -55.982325033023535
+        ]
+      ]
+    ]
+  },
+  "bbox": [
+    -179.77911370816287,
+    -55.982325033023535,
+    179.56061669726006,
+    82.71928405344526
+  ],
+  "properties": {
+    "start_datetime": "1905-04-01T00:00:00Z",
+    "end_datetime": "2016-07-05T00:00:00Z",
+    "datetime": "1905-04-01T00:00:00Z"
+  },
+  "assets": {
+    "bdod_0-5cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_0-5cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_0-5cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "0-5cm",
+          "description": "0-5cm"
+        }
+      ]
+    },
+    "bdod_5-15cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_5-15cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_5-15cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "5-15cm",
+          "description": "5-15cm"
+        }
+      ]
+    },
+    "bdod_15-30cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_15-30cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_15-30cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "15-30cm",
+          "description": "15-30cm"
+        }
+      ]
+    },
+    "bdod_30-60cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_30-60cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_30-60cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "30-60cm",
+          "description": "30-60cm"
+        }
+      ]
+    },
+    "bdod_60-100cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_60-100cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_60-100cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "60-100cm",
+          "description": "60-100cm"
+        }
+      ]
+    },
+    "bdod_100-200cm_mean_1000": {
+      "href": "https://files.isric.org/soilgrids/latest/data_aggregated/1000m/bdod/bdod_100-200cm_mean_1000.tif",
+      "type": "image/tiff; application=geotiff",
+      "title": "bdod_100-200cm_mean_1000",
+      "eo:bands": [
+        {
+          "name": "100-200cm",
+          "description": "100-200cm"
+        }
+      ]
+    }
+  },
+  "collection": "soilgrids_collection_1000m"
 }
 ```

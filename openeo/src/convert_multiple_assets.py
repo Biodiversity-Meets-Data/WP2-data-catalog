@@ -42,7 +42,7 @@ class ConvertMultipleAssets(STACInterface):
 
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item = self.create_item_from_rasters(f"item_{variable_name}_{resolution}", entries, self.projection)
+                item = self.create_item_from_rasters(f"item_{variable_name}_{resolution}m", entries, self.projection)
 
                 if item is None:
                     logger.warning(f"no item for {variable_name}")

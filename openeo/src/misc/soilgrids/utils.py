@@ -34,6 +34,7 @@ class Utils:
 
     @staticmethod
     def generate_file_names_for(variable_names: list, band_names: list, resolutions: list):
+        """failing to produce a valid file name will throw en exception at some point"""
         file_names = list()
 
         for variables_name in variable_names:
@@ -46,6 +47,7 @@ class Utils:
 
     @staticmethod
     def generate_urls(variable_names: list, band_names: list, resolutions: list):
+        """failing to produce a valid url will throw en exception at some point"""
         urls = list()
 
         for resolution in resolutions:
