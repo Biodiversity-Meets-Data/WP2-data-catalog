@@ -44,7 +44,7 @@ class ConvertSingleAsset(STACInterface):
 
         spatial_extent, temporal_extent = Utils.infer_extents_from(items)
         collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
-        collection = Utils.create_collection(self.collection_id, self.collection_id, extent=collection_extent)
+        collection = Utils.create_collection(self.collection_id, self.collection_id, self.collection_id, extent=collection_extent)
         collection.add_items(items)
 
         catalog = Utils.create_catalog(self.catalog_name, self.catalog_name)
