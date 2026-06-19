@@ -126,3 +126,67 @@ flowchart TD
 ### best practice
 
 see https://github.com/radiantearth/stac-spec/blob/master/best-practices.md
+
+### Create a collection
+
+```bash
+curl -X POST <SERVER> -H 'Content-Type: application/json' -d '<json>'
+```
+
+where <SERVER> is : https://bmd-stac.dryrun.link/collections
+where <json> is :
+
+```json
+{
+  "type": "Collection",
+  "id": "soilgrids_collection_1000m",
+  "stac_version": "1.1.0",
+  "stac_extensions": [
+    "https://stac-extensions.github.io/datacube/v2.2.0/schema.json",
+    "https://stac-extensions.github.io/authentication/v1.1.0/schema.json"
+  ],
+  "title": "Soilgrids collection at 1000m",
+  "description": "this a soilgrids collection at a specific resolution (1000m)",
+  "auth:refs": "fb0f7505337ed43a81971d9c",
+  "extent": {
+    "spatial": {
+      "bbox": [
+        [
+          -179.77911370816287,
+          -55.98232503302354,
+          179.56061669726006,
+          82.71928405344526
+        ]
+      ]
+    },
+    "temporal": {
+      "interval": [
+        [
+          "1905-04-01T00:00:00Z",
+          "2016-07-05T00:00:00Z"
+        ]
+      ]
+    }
+  },
+  "license": "CC BY 4.0",
+  "keywords": [
+    "soilgrids",
+    "aggregated",
+    "1000",
+    "bdod",
+    "cec",
+    "cfvo",
+    "clay",
+    "nitrogen",
+    "ocd",
+    "ocs",
+    "phh2o",
+    "sand",
+    "silt",
+    "soc",
+    "wv0010",
+    "wv0033",
+    "wv1500"
+  ]
+}
+```
