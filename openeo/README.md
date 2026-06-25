@@ -191,7 +191,7 @@ where <json> is the payload, contains the API key, and is :
 }
 ```
 
-## Create an item for a collection
+### Create an item for a collection
 
 ```bash
 curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: application/json' -d '<json>'
