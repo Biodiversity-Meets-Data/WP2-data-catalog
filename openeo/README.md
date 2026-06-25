@@ -123,7 +123,7 @@ flowchart TD
   C3_2 --> I2_bdod(Items ...)
 ```
 
-### best practice
+### Best practice
 
 see https://github.com/radiantearth/stac-spec/blob/master/best-practices.md
 
@@ -205,7 +205,6 @@ curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: applic
     "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
     "https://stac-extensions.github.io/authentication/v1.1.0/schema.json"
   ],
-  "auth:refs": "fb0f7505337ed43a81971d9c",
   "id": "item_bdod_1000m",
   "geometry": {
     "type": "Polygon",
