@@ -5,6 +5,7 @@ from pathlib import Path
 import pystac
 from datetime import datetime
 from pystac.extensions.eo import EOExtension
+from pystac.utils import datetime_to_str
 import rasterio
 import rasterio.warp
 from rasterio import RasterioIOError
@@ -50,7 +51,7 @@ class ConvertMultipleAssets(STACInterface):
 
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item = self.create_item_from_rasters(f"item_{variable_name}_{resolution}m", entries, self.projection)
+                item = self.create_item_from_rasters(variable_name, f"item_{variable_name}_{resolution}m", entries, self.projection)
 
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
@@ -79,7 +80,7 @@ class ConvertMultipleAssets(STACInterface):
         # top_catalog.describe()
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
-    def create_item_from_rasters(self, item_id: str, entries: list, projection: str):
+    def create_item_from_rasters(self, variable_name: str, item_id: str, entries: list, projection: str):
         """
         - reads multiple urls (if they exist), each associated with a variable
         - create a single Item
@@ -94,8 +95,12 @@ class ConvertMultipleAssets(STACInterface):
             logger.warning(f"nothing to be done for {item_id}")
             return None
         else:
+            properties = {
+                "soilgrids:variable": variable_name
+            }
             item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
-                                            end_datetime=self.end_datetime, bbox=bbox, geometry=geometry, properties={})
+                                            end_datetime=self.end_datetime, bbox=bbox, geometry=geometry,
+                                            properties=properties)
 
             # assets must be added to item first
             for entry in entries:

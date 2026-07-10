@@ -77,7 +77,8 @@ class Utils:
         asset = pystac.Asset(
             href=href,
             title=title,
-            media_type=media_type
+            media_type=media_type,
+            roles=["data"]
         )
 
         return asset
