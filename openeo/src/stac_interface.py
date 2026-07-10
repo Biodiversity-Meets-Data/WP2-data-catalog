@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class STACInterface:
+    """behavior shared by subclasses: manage commandline arguments -> log -> convert"""
     __metaclass__ = ABCMeta
 
     def __init__(self, args):

@@ -19,7 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class ConvertMultipleAssets(STACInterface):
+    """the strategy is to group multiple Assets (soil depths) into a single Item (variable)"""
     def __init__(self, arguments):
+        """keep command line arguments"""
         super().__init__(arguments)
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
@@ -28,6 +30,12 @@ class ConvertMultipleAssets(STACInterface):
         self.output_path = arguments.output_path
 
     def convert(self):
+        """
+        main function with the top-level steps:
+        - Catalog/Collections/Items creation
+        - associate Items and Collection, Collection and Catalog,
+        - normalize and save
+        """
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
         soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
@@ -72,6 +80,12 @@ class ConvertMultipleAssets(STACInterface):
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
 
     def create_item_from_rasters(self, item_id: str, entries: list, projection: str):
+        """
+        - reads multiple urls (if they exist), each associated with a variable
+        - create a single Item
+        - create one Asset per url
+        - associate Assets and Item
+        """
         logger.info("create item from rasters")
         hrefs = map(lambda entry: entry[Soilgrids_Constants.href_key], entries)
         geometry, bbox, missing_urls = ConvertMultipleAssets.extract_from_urls(hrefs, projection)
@@ -105,7 +119,7 @@ class ConvertMultipleAssets(STACInterface):
 
     @staticmethod
     def generate_entries(resolution: str, variable_names: list[str]):
-        """generates a wrapper"""
+        """generates a wrapper for later use, contains url and other metadata"""
         logger.info(f"generate entries for resolution {resolution}")
         entries = list()
         urls = Soilgrids_Utils.generate_urls(variable_names, Soilgrids_Constants.band_names, [resolution])
@@ -121,6 +135,7 @@ class ConvertMultipleAssets(STACInterface):
 
     @staticmethod
     def create_asset(entry):
+        """simple wrapper around Asset creation"""
         asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
                                    title=entry[Soilgrids_Constants.title_key],
                                    media_type=pystac.MediaType.GEOTIFF)
@@ -129,6 +144,7 @@ class ConvertMultipleAssets(STACInterface):
 
     @staticmethod
     def create_assets(entries: list):
+        """simple wrapper around multiple Assets creation"""
         logger.info(f"creating {str(len(entries))} assets")
         assets = list()
 
@@ -140,6 +156,7 @@ class ConvertMultipleAssets(STACInterface):
 
     @staticmethod
     def extract_from_urls(urls, projection):
+        """extract geometry and bbox from multiple urls, keeping track of unreachable urls"""
         logger.info("extracting from sources")
         geometries = []
         missing = []

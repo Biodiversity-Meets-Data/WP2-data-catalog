@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class Utils:
+    """shared code, should be independent of the data source"""
     @staticmethod
     def create_catalog(catalog_id: str, description: str):
         logger.info(f"creating catalog {catalog_id}")
@@ -30,6 +31,10 @@ class Utils:
 
     @staticmethod
     def create_item(item_id: str, polygon, bbox, datetime, start_datetime, end_datetime, src, proj_bounds):
+        """
+        packs metadata into a STAC Item
+        @todo add more properties (variable name, date, geometry, url), needed by cubing engine
+        """
         logger.info(f"creating item {item_id}")
         item = pystac.Item(
             id=item_id,
@@ -61,6 +66,13 @@ class Utils:
 
     @staticmethod
     def create_asset(href: str, title: str, media_type: str):
+        """
+        @todo add roles=["data"]
+        :param href:
+        :param title:
+        :param media_type:
+        :return:
+        """
         logger.info(f"creating asset {href}")
         asset = pystac.Asset(
             href=href,
@@ -81,6 +93,10 @@ class Utils:
 
     @staticmethod
     def parse_bands(file_path):
+        """
+        reads a file that contains a list of bands
+        @deprecated
+        """
         if not os.path.isfile(file_path):
             raise Exception(f"{file_path} is not a file")
 
@@ -91,6 +107,7 @@ class Utils:
 
     @staticmethod
     def infer_extents_from(items: list):
+        """infers spatial and temporal extends from a list of items"""
         logger.info("inferring extents for " + str(len(items)) + " items")
         geometries = list()
         datetimes = list()

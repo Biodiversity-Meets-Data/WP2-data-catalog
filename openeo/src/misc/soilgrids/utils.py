@@ -7,8 +7,10 @@ logger = logging.getLogger(__name__)
 
 
 class Utils:
+    """shared code, specific to soilgrids"""
     @staticmethod
     def extract_band_from_name(file_name: str, known_bands: list):
+        """some file name management to extract band name"""
         tokens = file_name.split(Constants.token_separator)
         nbr_tokens = len(tokens)
 
@@ -59,6 +61,7 @@ class Utils:
 
     @staticmethod
     def generate_url(variable_name: str, band_name: str, resolution: str):
+        """builds an url based on available elements"""
         filename = Utils.generate_file_name(variable_name=variable_name, resolution=resolution, band_name=band_name)
         url = f"{Constants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
 
@@ -66,6 +69,7 @@ class Utils:
 
     @staticmethod
     def extract_meta_data_from_raster(src, projection):
+        """reads raster and extract metadata"""
         proj_bounds = list(src.bounds)
         left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
         bbox = [left, bottom, right, top]

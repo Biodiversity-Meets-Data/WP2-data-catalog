@@ -1,4 +1,5 @@
 class Constants:
+    """constants used throughout the code"""
     asset_key = "image"
     src_key = "src"
     href_key = "href"

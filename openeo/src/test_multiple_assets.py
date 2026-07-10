@@ -13,7 +13,7 @@ parser.add_argument('-s', '--start_datetime', required=True, help="start date of
 # parse
 args = parser.parse_args()
 
-
+# entry point
 if __name__ == "__main__":
     convert = ConvertMultipleAssets(arguments=args)
     convert.run()
