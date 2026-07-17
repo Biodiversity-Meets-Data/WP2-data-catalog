@@ -127,6 +127,10 @@ flowchart TD
 
 see https://github.com/radiantearth/stac-spec/blob/master/best-practices.md
 
+### STAC API
+
+https://stac-utils.github.io/stac-server/reference/api/
+
 ### Create a collection
 
 ```bash
@@ -314,4 +318,10 @@ curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: applic
   },
   "collection": "soilgrids_collection_1000m"
 }
+```
+
+### Delete an object at collection level
+
+```bash
+curl -X DELETE <SERVER>/collections/<collection_id>
 ```
