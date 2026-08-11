@@ -64,16 +64,26 @@ class ConvertMultipleAssets(STACInterface):
 
             # collection level
             collection_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
-            collection_license="CC BY 4.0"
+            collection_license_name = "CC BY 4.0"
+            collection_license_link = Utils.create_link(rel="license",
+                                                        href="https://creativecommons.org/licenses/by/4.0/",
+                                                        type="text/html",
+                                                        title="Creative Commons")
+            collection_providers = list({
+                "name": "",
+                "roles": [""],
+                "url": ""
+            })
 
             soilgrids_collection = Utils.create_collection(f"soilgrids_collection_{resolution}m",
                                                            f"Soilgrids collection at resolution ({resolution}m)",
                                                            f"this is a soilgrids collection at a specific resolution ({resolution}m)",
-                                                           extent=collection_extent, license=collection_license,
-                                                           keywords=collection_keywords)
+                                                           extent=collection_extent, license=collection_license_name,
+                                                           keywords=collection_keywords, providers=collection_providers)
 
             # add bottom to top
             soilgrids_collection.add_items(items)
+            soilgrids_collection.add_link(collection_license_link)
             soilgrids_catalog.add_child(soilgrids_collection)
 
         top_catalog.add_child(soilgrids_catalog)

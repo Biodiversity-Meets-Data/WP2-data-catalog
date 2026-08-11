@@ -22,10 +22,10 @@ class Utils:
 
     @staticmethod
     def create_collection(collection_id: str, title: str, description: str, extent: Extent, license: str | None = None,
-                          keywords: list[str] | None = None):
+                          keywords: list[str] | None = None, providers: list[str] | None = None):
         logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id, title=title, description=description, extent=extent, license=license,
-                                       keywords=keywords)
+        collection = pystac.Collection(id=collection_id, title=title, description=description, extent=extent,
+                                       license=license, keywords=keywords, providers=providers)
 
         return collection
 
@@ -91,6 +91,13 @@ class Utils:
             bands.append(Band.create(name=band_name, description=band_name))
 
         return bands
+
+    @staticmethod
+    def create_link(rel: str, href: str, type: str, title: str):
+        logger.info(f"creating link")
+        link = pystac.Link(rel=rel, target=href, media_type=type, title=title)
+
+        return link
 
     @staticmethod
     def parse_bands(file_path):
