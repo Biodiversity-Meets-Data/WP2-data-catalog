@@ -326,12 +326,25 @@ curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: applic
 curl -X DELETE <SERVER>/collections/<collection_id>
 ```
 
-### Geonetwork
+## Geonetwork
+
+There is only one soilgrids dataset in the geonetwork catalogue, its uuid is 
+
+```
+8315df49-bde3-4138-8f71-9b722f3afd06
+```
 
 To query the Lifewatch ERIC API and use existing, recorded data instead of hard-coding information:
 
 https://metadatacatalogue.lifewatch.dev/srv/api/records/8315df49-bde3-4138-8f71-9b722f3afd06/formatters/json
 
-#### Authentication
+### Authentication
 
 see https://docs.geonetwork-opensource.org/4.2/api/the-geonetwork-api/#using-the-api-to-apply-an-xsl-process
+
+```bash
+python -m src.test_geonetwork \
+  -d <dataset_uuid>
+  -p <password> \
+  -u <username> \
+```
