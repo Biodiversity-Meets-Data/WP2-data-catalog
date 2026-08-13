@@ -16,17 +16,25 @@ parser.add_argument('-p', '--password', required=True, help="password for geonet
 parser.add_argument('-u', '--username', required=True, help="username for geonetwork catalogue")
 # parse
 args = parser.parse_args()
+username = args.username
+password = args.password
 
 # Set up your server and the authentication URL:
 server = "https://metadatacatalogue.lifewatch.dev"
-authenticate_url = server + "/srv/eng/info?type=me"
+authenticate_url = server + "/srv/api/me"
+# authenticate_url = server + "/srv/eng/info?type=me"
+logger.info(f"query url: {authenticate_url}")
 
 # To generate the XRSF token, send a post request to the following URL: <server><authenticate_url>
 session = requests.Session()
-response = session.post(authenticate_url)
+response = session.get(authenticate_url, auth=(username, password))
+# response = session.post(authenticate_url)
+
+response.raise_for_status()
+xsrf_token = session.cookies.get("XSRF-TOKEN")
 
 # Extract XRSF token
-xsrf_token = response.cookies.get("XSRF-TOKEN")
+# xsrf_token = response.cookies.get("XSRF-TOKEN")
 if xsrf_token:
     logger.info(f"The XSRF Token is: {xsrf_token}")
 else:
@@ -38,13 +46,10 @@ headers = {
     'X-XSRF-TOKEN': xsrf_token
 }
 
-query_url = f"/srv/api/records/{args.dataset}/formatters/json"
-username = args.username
-password = args.password
-logger.info(f"args {username} - {password}")
+query_url = server + f"/srv/api/records/{args.dataset}/formatters/json"
 
 # Send a put request to the endpoint
-response = session.get(server + query_url,
+response = session.get(query_url,
                        auth=(username, password),
                        headers=headers)
 
