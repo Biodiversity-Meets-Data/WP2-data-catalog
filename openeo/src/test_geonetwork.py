@@ -17,6 +17,7 @@ def parse_response(geonetwork_response):
 
     json = geonetwork_response.json()
     hits_key = "hits"
+    source_key = "_source"
 
     if hits_key not in json:
         raise Exception("missing key in response")
@@ -27,7 +28,14 @@ def parse_response(geonetwork_response):
     if len(json[hits_key][hits_key]) != 1:
         raise Exception("incorrect number of hits")
 
-    return json[hits_key][hits_key][0]
+    hit = json[hits_key][hits_key][0]
+
+    if source_key not in hit:
+        raise Exception("cannot find source in hit")
+
+    result = hit[source_key]
+
+    return result
 
 
 # parser for arguments
@@ -48,7 +56,7 @@ logger.info(f"query url: {query_url}")
 response = requests.get(query_url)
 
 try:
-    hit = parse_response(response)
-    print(json.dumps(hit))
+    dataset = parse_response(response)
+    print(json.dumps(dataset))
 except Exception as e:
     logger.error(f"global exception: {str(e)}")
