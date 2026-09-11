@@ -14,6 +14,7 @@ from shapely.ops import unary_union
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
+from src.extract_geonetwork import SoilGrids
 from src.stac_interface import STACInterface
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,10 @@ class ConvertMultipleAssets(STACInterface):
         - associate Items and Collection, Collection and Catalog,
         - normalize and save
         """
+        # get geonetwork dataset
+        soilgrids_dataset = SoilGrids.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
+        # TODO pick data from dataset to enrich collection/item/asset
+
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
         soilgrids_catalog = Utils.create_catalog("soilgrids_catalog", "below top")
@@ -63,21 +68,30 @@ class ConvertMultipleAssets(STACInterface):
             collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
 
             # collection level
+            # TODO  replace this
             collection_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
-            collection_license_name = "CC BY 4.0"
+            collection_license_name = Utils.check_key(Soilgrids_Constants.license_name_key, soilgrids_dataset)
+            license_url = Utils.check_key(Soilgrids_Constants.license_url_key, soilgrids_dataset)
             collection_license_link = Utils.create_link(rel="license",
-                                                        href="https://creativecommons.org/licenses/by/4.0/",
+                                                        href=license_url,
                                                         type="text/html",
-                                                        title="Creative Commons")
+                                                        title=collection_license_name)
+            # TODO  replace this
             collection_providers = list({
                 "name": "",
                 "roles": [""],
                 "url": ""
             })
 
+            # collection_title = f"Soilgrids collection at resolution ({resolution}m)"
+            # collection_description = f"this is a soilgrids collection at a specific resolution ({resolution}m)"
+            project_data = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
+            collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
+            collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
+
             soilgrids_collection = Utils.create_collection(f"soilgrids_collection_{resolution}m",
-                                                           f"Soilgrids collection at resolution ({resolution}m)",
-                                                           f"this is a soilgrids collection at a specific resolution ({resolution}m)",
+                                                           collection_title,
+                                                           collection_description,
                                                            extent=collection_extent, license=collection_license_name,
                                                            keywords=collection_keywords, providers=collection_providers)
 

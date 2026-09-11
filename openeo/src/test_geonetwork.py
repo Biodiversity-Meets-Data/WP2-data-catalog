@@ -27,8 +27,8 @@ logger.info(f"query url: {query_url}")
 response = requests.get(query_url)
 
 try:
-    soilgrids = SoilGrids()
-    dataset = soilgrids.check_response(response)
+    SoilGrids.query_dataset(args.uuid)
+    dataset = SoilGrids.check_response(response)
     print(json.dumps(dataset))
 except Exception as e:
     logger.error(f"global exception: {str(e)}")
