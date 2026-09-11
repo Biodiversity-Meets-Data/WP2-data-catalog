@@ -159,3 +159,10 @@ class Utils:
         maybe infer start_datetime from datetime
         """
         logger.debug("nothing special to be done with arguments, yet")
+
+    @staticmethod
+    def check_key(key, wrapper: dict):
+        if key not in wrapper:
+            raise Exception("missing key in object")
+
+        return wrapper[key]
