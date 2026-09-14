@@ -15,6 +15,7 @@ class Constants:
     datatables_key = "dataTables"
     attribute_list_key = "attributeList"
     attribute_name_key = "attributeName"
+    keywords_kpi = "keywordsKpi"
     contacts_key = "contacts"
     license_url_key = "url_licensed_dataset"
     license_name_key = "licenseName_licensed_dataset"

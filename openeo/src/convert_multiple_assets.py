@@ -38,6 +38,7 @@ class ConvertMultipleAssets(STACInterface):
         - associate Items and Collection, Collection and Catalog,
         - normalize and save
         """
+        # TODO: add dates, geometry, lfe dataset source
         # get geonetwork dataset
         soilgrids_dataset = SoilGrids.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
         # TODO pick data from dataset to enrich collection/item/asset
@@ -68,8 +69,9 @@ class ConvertMultipleAssets(STACInterface):
             collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
 
             # collection level
-            # TODO  replace this
-            collection_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
+            keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, soilgrids_dataset)
+            # make it unique with set()
+            collection_keywords = list(set(list(("soilgrids", "aggregated", resolution)) + variable_names + keywords_kpi))
             collection_license_name = Utils.check_key(Soilgrids_Constants.license_name_key, soilgrids_dataset)
             license_url = Utils.check_key(Soilgrids_Constants.license_url_key, soilgrids_dataset)
             collection_license_link = Utils.create_link(rel="license",
@@ -83,8 +85,6 @@ class ConvertMultipleAssets(STACInterface):
                 "url": ""
             })
 
-            # collection_title = f"Soilgrids collection at resolution ({resolution}m)"
-            # collection_description = f"this is a soilgrids collection at a specific resolution ({resolution}m)"
             project_data = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
             collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
             collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
@@ -93,7 +93,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            collection_title,
                                                            collection_description,
                                                            extent=collection_extent, license=collection_license_name,
-                                                           keywords=collection_keywords, providers=collection_providers)
+                                                           keywords=collection_keywords)
 
             # add bottom to top
             soilgrids_collection.add_items(items)

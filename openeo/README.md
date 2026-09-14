@@ -71,7 +71,9 @@ python -m src.test_basic \
   -t "SoilGrids250m 2.0 - Bulk density aggregated 5000m" \ 
   -i "data/input/soilgrids/highres/bdod" \ 
   -o "data/output/soilgrids/test_catalog/"
+```
   
+```bash
 # simpler version for multiple assets per item
 python -m src.test_multiple_assets \ 
   -d "1905-04-01" \ 
@@ -346,10 +348,15 @@ To test the query :
 python -m src.test_geonetwork -d "8315df49-bde3-4138-8f71-9b722f3afd06" | jq
 ```
 
-The payload comes from Elasticsearch, the original object is located inside :
+The payload comes from Elasticsearch, see :
+
+- https://docs.geonetwork-opensource.org/4.2/api/search/
+- https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search
+
+the original object is located inside :
 
 ```python
-payload.hits.hits._source
+payload["hits"]["hits"][0]["_source"]
 ```
 
 It still contains some geonetwork/Elasticsearch metadata. Besides these, useful original properties are :
@@ -361,3 +368,5 @@ It still contains some geonetwork/Elasticsearch metadata. Besides these, useful 
 - "methods"
 - "methodSteps"
 - "citation"
+
+Use these to replace hard-coded values.

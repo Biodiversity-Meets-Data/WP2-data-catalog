@@ -23,7 +23,7 @@ class SoilGrids:
 
     @staticmethod
     def check_response(geonetwork_response):
-        """checks elasticsearch response"""
+        """checks elasticsearch response, looking for original object"""
         logger.info("parse geonetwork response")
 
         # check http code
