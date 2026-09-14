@@ -4,6 +4,7 @@ import logging
 import requests
 import json
 from src.extract_geonetwork import SoilGrids
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 # setup logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -19,8 +20,7 @@ parser.add_argument('-d', '--uuid', required=True, help="uuid for dataset")
 args = parser.parse_args()
 
 # Set up your server and the query URL:
-server = "https://metadatacatalogue.lifewatch.eu"
-query_url = server + f"/srv/api/records?uuid={args.uuid}"
+query_url = Soilgrids_Constants.geonetwork_base_url + Soilgrids_Constants.geonetwork_query_path + args.uuid
 logger.info(f"query url: {query_url}")
 
 # Send a put request to the endpoint

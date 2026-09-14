@@ -12,8 +12,7 @@ class SoilGrids:
         logger.info(f"query dataset {uuid}")
 
         # Set up your server and the query URL:
-        server = "https://metadatacatalogue.lifewatch.eu"
-        query_url = server + f"/srv/api/records?uuid={uuid}"
+        query_url = Soilgrids_Constants.geonetwork_base_url + Soilgrids_Constants.geonetwork_query_path + uuid
         logger.info(f"query url: {query_url}")
 
         # Send a get request to the endpoint

@@ -26,6 +26,8 @@ class Constants:
     token_separator = "_"
     TIF_EXTENSION = "tif"
     soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
+    geonetwork_base_url = "https://metadatacatalogue.lifewatch.eu"
+    geonetwork_query_path = "/srv/api/records?uuid="
     soilgrids_dataset_uuid = "8315df49-bde3-4138-8f71-9b722f3afd06"
     DEFAULT_PROJECTION = "EPSG:4326"
     BDOD_VALUE = "bdod"

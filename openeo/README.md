@@ -336,15 +336,28 @@ There is only one soilgrids dataset in the geonetwork catalogue, its uuid is
 
 To query the Lifewatch ERIC API and use existing, recorded data instead of hard-coding information:
 
-https://metadatacatalogue.lifewatch.dev/srv/api/records/8315df49-bde3-4138-8f71-9b722f3afd06/formatters/json
+```html
+https://metadatacatalogue.lifewatch.eu//srv/api/records?uuid=8315df49-bde3-4138-8f71-9b722f3afd06
+```
 
-### Authentication
-
-see https://docs.geonetwork-opensource.org/4.2/api/the-geonetwork-api/#using-the-api-to-apply-an-xsl-process
+To test the query :
 
 ```bash
-python -m src.test_geonetwork \
-  -d <dataset_uuid>
-  -p <password> \
-  -u <username> \
+python -m src.test_geonetwork -d "8315df49-bde3-4138-8f71-9b722f3afd06" | jq
 ```
+
+The payload comes from Elasticsearch, the original object is located inside :
+
+```python
+payload.hits.hits._source
+```
+
+It still contains some geonetwork/Elasticsearch metadata. Besides these, useful original properties are :
+
+- "contacts"
+- "url_licensed_dataset"
+- "licenseName_licensed_dataset"
+- "intellectualRights_dataset"
+- "methods"
+- "methodSteps"
+- "citation"
