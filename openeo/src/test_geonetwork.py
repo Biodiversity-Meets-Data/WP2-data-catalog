@@ -31,5 +31,5 @@ try:
     dataset = SoilGrids.check_response(response)
     print(json.dumps(dataset))
 except Exception as e:
-    logger.error(f"global exception: {str(e)}")
+    logger.exception(f"global exception: {str(e)}")
 

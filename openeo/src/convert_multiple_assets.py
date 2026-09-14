@@ -78,7 +78,7 @@ class ConvertMultipleAssets(STACInterface):
                                                         href=license_url,
                                                         type="text/html",
                                                         title=collection_license_name)
-            # TODO  replace this
+            # TODO  replace this with Provider
             collection_providers = list({
                 "name": "",
                 "roles": [""],

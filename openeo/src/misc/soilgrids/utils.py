@@ -39,10 +39,10 @@ class Utils:
         """failing to produce a valid file name will throw en exception at some point"""
         file_names = list()
 
-        for variables_name in variable_names:
+        for variable_name in variable_names:
             for band_name in band_names:
                 for resolution in resolutions:
-                    file_name = Utils.generate_file_name(variables_name, band_name, resolution)
+                    file_name = Utils.generate_file_name(variable_name, band_name, resolution)
                     file_names.append(file_name + ".tif")
 
         return file_names

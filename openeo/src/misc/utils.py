@@ -2,7 +2,7 @@ import os
 import json
 import logging
 import pystac
-from pystac import Extent
+from pystac import Extent, Provider
 from pystac.extensions.eo import Band
 import shapely
 from shapely.geometry import Polygon, mapping, shape
@@ -22,7 +22,7 @@ class Utils:
 
     @staticmethod
     def create_collection(collection_id: str, title: str, description: str, extent: Extent, license: str | None = None,
-                          keywords: list[str] | None = None, providers: list[str] | None = None):
+                          keywords: list[str] | None = None, providers: list[Provider] | None = None):
         logger.info(f"creating collection {collection_id}")
         collection = pystac.Collection(id=collection_id, title=title, description=description, extent=extent,
                                        license=license, keywords=keywords, providers=providers)
