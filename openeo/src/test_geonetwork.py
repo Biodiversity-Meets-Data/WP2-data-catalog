@@ -3,7 +3,7 @@ import argparse
 import logging
 import requests
 import json
-from src.extract_geonetwork import SoilGrids
+from src.extract_geonetwork import Geonetwork
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 # setup logging
@@ -24,11 +24,11 @@ query_url = Soilgrids_Constants.geonetwork_base_url + Soilgrids_Constants.geonet
 logger.info(f"query url: {query_url}")
 
 # Send a put request to the endpoint
-response = requests.get(query_url)
+response = requests.get(query_url, timeout=Soilgrids_Constants.timeout)
 
 try:
-    SoilGrids.query_dataset(args.uuid)
-    dataset = SoilGrids.check_response(response)
+    Geonetwork.query_dataset(args.uuid)
+    dataset = Geonetwork.check_response(response)
     print(json.dumps(dataset))
 except Exception as e:
     logger.exception(f"global exception: {str(e)}")

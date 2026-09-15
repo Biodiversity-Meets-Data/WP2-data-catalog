@@ -2,11 +2,12 @@ import os
 import json
 import logging
 import pystac
-from pystac import Extent, Provider
+from pystac import Extent, Provider, ProviderRole
 from pystac.extensions.eo import Band
 import shapely
 from shapely.geometry import Polygon, mapping, shape
 import rasterio
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 
@@ -94,10 +95,36 @@ class Utils:
 
     @staticmethod
     def create_link(rel: str, href: str, type: str, title: str):
-        logger.info(f"creating link")
+        logger.info(f"creating link {href}")
         link = pystac.Link(rel=rel, target=href, media_type=type, title=title)
 
         return link
+
+    @staticmethod
+    def create_providers(names: list[str]):
+        logger.info(f"creating {len(names)} providers")
+        providers = list()
+
+        for name in names:
+            provider = pystac.Provider(name=name)
+            providers.append(provider)
+
+        return providers
+
+    @staticmethod
+    def create_provider(name: str,
+                        url: str | None = None,
+                        roles: list[ProviderRole] | None = None,
+                        email: str | None = None):
+        logger.info(f"creating provider {name}")
+        extra_fields = None
+
+        if email is not None:
+            extra_fields = {Soilgrids_Constants.email_key: email}
+
+        provider = pystac.Provider(name=name, url=url, roles=roles, extra_fields=extra_fields)
+
+        return provider
 
     @staticmethod
     def parse_bands(file_path):

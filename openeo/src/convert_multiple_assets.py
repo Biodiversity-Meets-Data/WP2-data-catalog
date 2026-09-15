@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 from urllib.parse import urlparse
 from pathlib import Path
 import pystac
@@ -14,7 +15,7 @@ from shapely.ops import unary_union
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
-from src.extract_geonetwork import SoilGrids
+from src.extract_geonetwork import Geonetwork
 from src.stac_interface import STACInterface
 
 logger = logging.getLogger(__name__)
@@ -38,9 +39,9 @@ class ConvertMultipleAssets(STACInterface):
         - associate Items and Collection, Collection and Catalog,
         - normalize and save
         """
-        # TODO: add dates, geometry, lfe dataset source
+        # TODO: add dates, geometry
         # get geonetwork dataset
-        soilgrids_dataset = SoilGrids.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
+        soilgrids_dataset = Geonetwork.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
         # TODO pick data from dataset to enrich collection/item/asset
 
         # create top to bottom
@@ -78,13 +79,9 @@ class ConvertMultipleAssets(STACInterface):
                                                         href=license_url,
                                                         type="text/html",
                                                         title=collection_license_name)
-            # TODO  replace this with Provider
-            collection_providers = list({
-                "name": "",
-                "roles": [""],
-                "url": ""
-            })
-
+            # many providers
+            collection_providers = Geonetwork.extract_providers(soilgrids_dataset)
+            # wrapper for title and description
             project_data = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
             collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
             collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
@@ -93,7 +90,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            collection_title,
                                                            collection_description,
                                                            extent=collection_extent, license=collection_license_name,
-                                                           keywords=collection_keywords)
+                                                           keywords=collection_keywords, providers=collection_providers)
 
             # add bottom to top
             soilgrids_collection.add_items(items)
@@ -197,6 +194,7 @@ class ConvertMultipleAssets(STACInterface):
                     left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
                     geom = box(left, bottom, right, top)
                     geometries.append(geom)
+                    time.sleep(2)
             except RasterioIOError:
                 logger.error(f"CANNOT OPEN {url}")
                 missing.append(url)

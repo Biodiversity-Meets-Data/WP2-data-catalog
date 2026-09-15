@@ -1,4 +1,6 @@
 import logging
+
+import pystac
 import requests
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.utils import Utils
@@ -6,7 +8,7 @@ from src.misc.utils import Utils
 logger = logging.getLogger(__name__)
 
 
-class SoilGrids:
+class Geonetwork:
     @staticmethod
     def query_dataset(uuid: str):
         logger.info(f"query dataset {uuid}")
@@ -16,8 +18,8 @@ class SoilGrids:
         logger.info(f"query url: {query_url}")
 
         # Send a get request to the endpoint
-        response = requests.get(query_url)
-        dataset = SoilGrids.check_response(response)
+        response = requests.get(query_url, timeout=Soilgrids_Constants.timeout)
+        dataset = Geonetwork.check_response(response)
 
         return dataset
 
@@ -40,7 +42,7 @@ class SoilGrids:
 
         hit = tmp[0]
         result = Utils.check_key(Soilgrids_Constants.source_key, hit)
-        SoilGrids.check_dataset(result)
+        Geonetwork.check_dataset(result)
 
         return result
 
@@ -51,6 +53,7 @@ class SoilGrids:
         project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
+        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
         license_url = Utils.check_key(Soilgrids_Constants.license_url_key, dataset)
         license_name = Utils.check_key(Soilgrids_Constants.license_name_key, dataset)
@@ -63,7 +66,7 @@ class SoilGrids:
     def parse_data_tables(data_tables: dict):
         logger.info("parse data tables")
         attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, data_tables)
-        variables = SoilGrids.extract_variable_names(attributes)
+        variables = Geonetwork.extract_variable_names(attributes)
 
         return variables
 
@@ -76,13 +79,18 @@ class SoilGrids:
             name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
             variables.append(name)
 
+        diff = set(variables).symmetric_difference(Soilgrids_Constants.VARIABLE_NAMES)
+
+        if len(diff) != 0:
+            raise Exception(f"comparing available attributes failed: %s", diff)
+
         return variables
 
     @staticmethod
     def parse_methods(methods: dict):
         logger.info("parse methods")
         steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
-        citations = SoilGrids.extract_citations(steps)
+        citations = Geonetwork.extract_citations(steps)
 
         return citations
 
@@ -95,3 +103,52 @@ class SoilGrids:
             citations.append(Utils.check_key(Soilgrids_Constants.citation_key, step))
 
         return citations
+
+    @staticmethod
+    def extract_providers(dataset: dict):
+        logger.info("extract providers")
+        providers = list()
+        creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
+        contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
+        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+
+        # people as producer ?
+        creator_roles = list(pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER))
+        for creator in creators:
+            provider_name = creator[Soilgrids_Constants.individual_name_surname] + " " + creator[Soilgrids_Constants.individual_name_given_name]
+            provider_email = creator[Soilgrids_Constants.electronic_email_address]
+            provider_url = creator[Soilgrids_Constants.user_id]
+            provider = Utils.create_provider(name=provider_name,
+                                             roles=creator_roles,
+                                             email=provider_email,
+                                             url=provider_url)
+            providers.append(provider)
+
+        # soilgrids as producer, licensor, host
+        contact_roles = list((pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER),
+                             pystac.provider.ProviderRole(pystac.ProviderRole.LICENSOR),
+                              pystac.provider.ProviderRole(pystac.ProviderRole.HOST)))
+        for contact in contacts:
+            provider_name = contact[Soilgrids_Constants.organization_name]
+            provider_email = contact[Soilgrids_Constants.electronic_email_address]
+            soilgrids_provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
+            providers.append(soilgrids_provider)
+
+        # BMD as processor
+        bmd_roles = list(pystac.provider.ProviderRole(pystac.ProviderRole.PROCESSOR))
+        bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
+                                             roles=bmd_roles,
+                                             url=Soilgrids_Constants.BMD_DOI)
+        providers.append(bmd_provider)
+
+        # LFE catalog
+        lfe_provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+                                             url=Soilgrids_Constants.geonetwork_base_url)
+        providers.append(lfe_provider)
+
+        # SIB
+        sib_provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
+                                             url=Soilgrids_Constants.SIB_URL)
+        providers.append(sib_provider)
+
+        return providers
