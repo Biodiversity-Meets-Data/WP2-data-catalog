@@ -113,7 +113,7 @@ class Geonetwork:
         metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
 
         # people as producer ?
-        creator_roles = list(pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER))
+        creator_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER)]
         for creator in creators:
             provider_name = creator[Soilgrids_Constants.individual_name_surname] + " " + creator[Soilgrids_Constants.individual_name_given_name]
             provider_email = creator[Soilgrids_Constants.electronic_email_address]
@@ -125,9 +125,9 @@ class Geonetwork:
             providers.append(provider)
 
         # soilgrids as producer, licensor, host
-        contact_roles = list((pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER),
-                             pystac.provider.ProviderRole(pystac.ProviderRole.LICENSOR),
-                              pystac.provider.ProviderRole(pystac.ProviderRole.HOST)))
+        contact_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER),
+                         pystac.provider.ProviderRole(pystac.ProviderRole.LICENSOR),
+                         pystac.provider.ProviderRole(pystac.ProviderRole.HOST)]
         for contact in contacts:
             provider_name = contact[Soilgrids_Constants.organization_name]
             provider_email = contact[Soilgrids_Constants.electronic_email_address]
@@ -135,7 +135,7 @@ class Geonetwork:
             providers.append(soilgrids_provider)
 
         # BMD as processor
-        bmd_roles = list(pystac.provider.ProviderRole(pystac.ProviderRole.PROCESSOR))
+        bmd_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PROCESSOR)]
         bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
                                              roles=bmd_roles,
                                              url=Soilgrids_Constants.BMD_DOI)
