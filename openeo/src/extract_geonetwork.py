@@ -102,6 +102,9 @@ class Geonetwork:
         for step in method_steps:
             citations.append(Utils.check_key(Soilgrids_Constants.citation_key, step))
 
+        if len(citations) != 1:
+            raise Exception("incorrect number of citations")
+
         return citations
 
     @staticmethod
@@ -110,29 +113,23 @@ class Geonetwork:
         providers = list()
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
-        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        metadata_providers = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
 
         # people as producer ?
         creator_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER)]
         for creator in creators:
-            provider_name = creator[Soilgrids_Constants.individual_name_surname] + " " + creator[Soilgrids_Constants.individual_name_given_name]
-            provider_email = creator[Soilgrids_Constants.electronic_email_address]
-            provider_url = creator[Soilgrids_Constants.user_id]
-            provider = Utils.create_provider(name=provider_name,
-                                             roles=creator_roles,
-                                             email=provider_email,
-                                             url=provider_url)
+            provider = Geonetwork.extract_person(creator, creator_roles)
             providers.append(provider)
 
-        # soilgrids as producer, licensor, host
+        # soilgrids as producer, licensor, host (currently)
         contact_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER),
                          pystac.provider.ProviderRole(pystac.ProviderRole.LICENSOR),
                          pystac.provider.ProviderRole(pystac.ProviderRole.HOST)]
         for contact in contacts:
             provider_name = contact[Soilgrids_Constants.organization_name]
             provider_email = contact[Soilgrids_Constants.electronic_email_address]
-            soilgrids_provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
-            providers.append(soilgrids_provider)
+            provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
+            providers.append(provider)
 
         # BMD as processor
         bmd_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PROCESSOR)]
@@ -141,14 +138,32 @@ class Geonetwork:
                                              url=Soilgrids_Constants.BMD_DOI)
         providers.append(bmd_provider)
 
-        # LFE catalog
-        lfe_provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
-                                             url=Soilgrids_Constants.geonetwork_base_url)
-        providers.append(lfe_provider)
+        # LWE catalog
+        provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+                                         url=Soilgrids_Constants.geonetwork_base_url)
+        providers.append(provider)
+
+        # chiara
+        for metadata_provider in metadata_providers:
+            provider = Geonetwork.extract_person(metadata_provider)
+            providers.append(provider)
 
         # SIB
-        sib_provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
-                                             url=Soilgrids_Constants.SIB_URL)
-        providers.append(sib_provider)
+        provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
+                                         url=Soilgrids_Constants.SIB_URL)
+        providers.append(provider)
 
         return providers
+
+    @staticmethod
+    def extract_person(person: dict, roles: list | None = None):
+        logger.info("extract from person")
+        provider_name = person[Soilgrids_Constants.individual_name_surname] + " " + person[Soilgrids_Constants.individual_name_given_name]
+        provider_email = person[Soilgrids_Constants.electronic_email_address]
+        provider_url = person[Soilgrids_Constants.user_id]
+        provider = Utils.create_provider(name=provider_name,
+                                         roles=roles,
+                                         email=provider_email,
+                                         url=provider_url)
+
+        return provider

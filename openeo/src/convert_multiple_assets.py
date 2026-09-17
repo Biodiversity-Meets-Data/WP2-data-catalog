@@ -42,7 +42,6 @@ class ConvertMultipleAssets(STACInterface):
         # TODO: add dates, geometry
         # get geonetwork dataset
         soilgrids_dataset = Geonetwork.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
-        # TODO pick data from dataset to enrich collection/item/asset
 
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
@@ -85,12 +84,24 @@ class ConvertMultipleAssets(STACInterface):
             project_data = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
             collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
             collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
+            # citations
+            # TODO
+            methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
+            method_steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
+            first_citation = Geonetwork.extract_citations(method_steps=method_steps)[0]
+            # extra fields
+            extra_fields = {
+                "sci:citation": first_citation
+            }
 
             soilgrids_collection = Utils.create_collection(f"soilgrids_collection_{resolution}m",
                                                            collection_title,
                                                            collection_description,
-                                                           extent=collection_extent, license=collection_license_name,
-                                                           keywords=collection_keywords, providers=collection_providers)
+                                                           extent=collection_extent,
+                                                           license=collection_license_name,
+                                                           keywords=collection_keywords,
+                                                           providers=collection_providers,
+                                                           extra_fields=extra_fields)
 
             # add bottom to top
             soilgrids_collection.add_items(items)

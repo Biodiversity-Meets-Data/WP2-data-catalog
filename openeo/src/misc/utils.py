@@ -1,6 +1,8 @@
 import os
 import json
 import logging
+from typing import Any
+
 import pystac
 from pystac import Extent, Provider, ProviderRole
 from pystac.extensions.eo import Band
@@ -22,11 +24,26 @@ class Utils:
         return catalog
 
     @staticmethod
-    def create_collection(collection_id: str, title: str, description: str, extent: Extent, license: str | None = None,
-                          keywords: list[str] | None = None, providers: list[Provider] | None = None):
+    def create_collection(collection_id: str,
+                          title: str,
+                          description: str,
+                          extent: Extent,
+                          license: str | None = None,
+                          keywords: list[str] | None = None,
+                          providers: list[Provider] | None = None,
+                          extra_fields: dict[str, Any] | None = None):
         logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id, title=title, description=description, extent=extent,
-                                       license=license, keywords=keywords, providers=providers)
+        collection = pystac.Collection(id=collection_id,
+                                       title=title,
+                                       description=description,
+                                       extent=extent,
+                                       license=license,
+                                       keywords=keywords,
+                                       providers=providers,
+                                       stac_extensions=[
+                                            "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
+                                       ],
+                                       extra_fields=extra_fields)
 
         return collection
 
