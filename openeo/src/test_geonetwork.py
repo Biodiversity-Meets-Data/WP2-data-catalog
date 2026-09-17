@@ -5,6 +5,7 @@ import requests
 import json
 from src.extract_geonetwork import Geonetwork
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 
 # setup logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -20,7 +21,7 @@ parser.add_argument('-d', '--uuid', required=True, help="uuid for dataset")
 args = parser.parse_args()
 
 # Set up your server and the query URL:
-query_url = Soilgrids_Constants.geonetwork_base_url + Soilgrids_Constants.geonetwork_query_path + args.uuid
+query_url = Soilgrids_Utils.build_catalog_url(uuid=args.uuid)
 logger.info(f"query url: {query_url}")
 
 # Send a put request to the endpoint

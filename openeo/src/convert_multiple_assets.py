@@ -85,7 +85,6 @@ class ConvertMultipleAssets(STACInterface):
             collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
             collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
             # citations
-            # TODO
             methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
             method_steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
             first_citation = Geonetwork.extract_citations(method_steps=method_steps)[0]
@@ -102,6 +101,10 @@ class ConvertMultipleAssets(STACInterface):
                                                            keywords=collection_keywords,
                                                            providers=collection_providers,
                                                            extra_fields=extra_fields)
+
+            # links
+            links = Geonetwork.extract_links()
+            soilgrids_collection.add_links(links)
 
             # add bottom to top
             soilgrids_collection.add_items(items)

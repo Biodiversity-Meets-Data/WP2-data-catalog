@@ -353,13 +353,13 @@ The payload comes from Elasticsearch, see :
 - https://docs.geonetwork-opensource.org/4.2/api/search/
 - https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search
 
-the original object is located inside :
+the original object is located inside the payload :
 
-```python
+```
 payload["hits"]["hits"][0]["_source"]
 ```
 
-It still contains some geonetwork/Elasticsearch metadata. Besides these, useful original properties are :
+It still contains some Geonetwork/Elasticsearch metadata. Besides these, some useful original properties are :
 
 - "contacts"
 - "url_licensed_dataset"

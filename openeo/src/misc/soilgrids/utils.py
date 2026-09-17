@@ -82,3 +82,8 @@ class Utils:
         ]))
 
         return proj_bounds, bbox, polygon
+
+    @staticmethod
+    def build_catalog_url(uuid: str):
+        """builds url for soilgrids dataset"""
+        return Constants.geonetwork_base_url + Constants.geonetwork_query_path + uuid

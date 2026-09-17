@@ -1,8 +1,10 @@
 import logging
 
-import pystac
 import requests
+from pystac import RelType, MediaType, Link, ProviderRole
+
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
 
 logger = logging.getLogger(__name__)
@@ -14,7 +16,7 @@ class Geonetwork:
         logger.info(f"query dataset {uuid}")
 
         # Set up your server and the query URL:
-        query_url = Soilgrids_Constants.geonetwork_base_url + Soilgrids_Constants.geonetwork_query_path + uuid
+        query_url = Soilgrids_Utils.build_catalog_url(uuid=uuid)
         logger.info(f"query url: {query_url}")
 
         # Send a get request to the endpoint
@@ -108,6 +110,12 @@ class Geonetwork:
         return citations
 
     @staticmethod
+    def extract_datetime(dataset: dict):
+        logger.info("extract datetime")
+
+
+
+    @staticmethod
     def extract_providers(dataset: dict):
         logger.info("extract providers")
         providers = list()
@@ -116,40 +124,46 @@ class Geonetwork:
         metadata_providers = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
 
         # people as producer ?
-        creator_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER)]
+        creator_roles = [ProviderRole.PRODUCER]
         for creator in creators:
             provider = Geonetwork.extract_person(creator, creator_roles)
             providers.append(provider)
 
         # soilgrids as producer, licensor, host (currently)
-        contact_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PRODUCER),
-                         pystac.provider.ProviderRole(pystac.ProviderRole.LICENSOR),
-                         pystac.provider.ProviderRole(pystac.ProviderRole.HOST)]
+        contact_roles = [ProviderRole.PRODUCER,
+                         ProviderRole.LICENSOR,
+                         ProviderRole.HOST]
         for contact in contacts:
             provider_name = contact[Soilgrids_Constants.organization_name]
             provider_email = contact[Soilgrids_Constants.electronic_email_address]
             provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
             providers.append(provider)
 
-        # BMD as processor
-        bmd_roles = [pystac.provider.ProviderRole(pystac.ProviderRole.PROCESSOR)]
+        # BMD as processor, host
+        bmd_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
         bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
                                              roles=bmd_roles,
                                              url=Soilgrids_Constants.BMD_DOI)
         providers.append(bmd_provider)
 
         # LWE catalog
+        lwe_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
         provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+                                         roles=lwe_roles,
                                          url=Soilgrids_Constants.geonetwork_base_url)
         providers.append(provider)
 
         # chiara
+        metadata_roles = [ProviderRole.PROCESSOR]
         for metadata_provider in metadata_providers:
-            provider = Geonetwork.extract_person(metadata_provider)
+            provider = Geonetwork.extract_person(metadata_provider, roles=metadata_roles)
             providers.append(provider)
 
         # SIB
         provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
+                                         roles=metadata_roles,
                                          url=Soilgrids_Constants.SIB_URL)
         providers.append(provider)
 
@@ -167,3 +181,22 @@ class Geonetwork:
                                          url=provider_url)
 
         return provider
+
+    @staticmethod
+    def extract_links() -> list[Link]:
+        logger.info("extract links")
+        links = list()
+        # isric
+        url = Soilgrids_Constants.isric_base_url
+        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
+        links.append(link)
+        # soilgrids
+        url = Soilgrids_Constants.soilgrids_base_url
+        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
+        links.append(link)
+        # catalog
+        url = Soilgrids_Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid)
+        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
+        links.append(link)
+
+        return links

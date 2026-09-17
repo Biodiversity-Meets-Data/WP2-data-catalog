@@ -33,6 +33,7 @@ class Constants:
     max_nbr_tokens = 4
     token_separator = "_"
     TIF_EXTENSION = "tif"
+    isric_base_url = "https://isric.org/"
     soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
     geonetwork_base_url = "https://metadatacatalogue.lifewatch.eu"
     geonetwork_query_path = "/srv/api/records?uuid="
