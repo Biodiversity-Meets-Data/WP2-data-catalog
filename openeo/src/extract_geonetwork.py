@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class Geonetwork:
     @staticmethod
     def query_dataset(uuid: str):
+        """entry point, main query"""
         logger.info(f"query dataset {uuid}")
 
         # Set up your server and the query URL:
@@ -27,7 +28,7 @@ class Geonetwork:
 
     @staticmethod
     def check_response(geonetwork_response):
-        """checks elasticsearch response, looking for original object"""
+        """checks elasticsearch response, contains the original dataset"""
         logger.info("parse geonetwork response")
 
         # check http code
@@ -51,6 +52,7 @@ class Geonetwork:
     @staticmethod
     def check_dataset(dataset: dict):
         logger.info("check dataset content")
+        """check for presence of important keys"""
 
         project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
@@ -61,8 +63,6 @@ class Geonetwork:
         license_name = Utils.check_key(Soilgrids_Constants.license_name_key, dataset)
         intellectual_rights = Utils.check_key(Soilgrids_Constants.intellectual_rights_key, dataset)
         methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
-
-        return True
 
     @staticmethod
     def parse_data_tables(data_tables: dict):
@@ -75,6 +75,7 @@ class Geonetwork:
     @staticmethod
     def extract_variable_names(attributes: dict):
         logger.info("extract variable names")
+        """to be compared with the hardcoded attributes"""
         variables = []
 
         for attribute in attributes:
@@ -98,6 +99,7 @@ class Geonetwork:
 
     @staticmethod
     def extract_citations(method_steps: dict):
+        """should only contain a single citation"""
         logger.info("extract citations")
         citations = []
 
@@ -110,13 +112,8 @@ class Geonetwork:
         return citations
 
     @staticmethod
-    def extract_datetime(dataset: dict):
-        logger.info("extract datetime")
-
-
-
-    @staticmethod
     def extract_providers(dataset: dict):
+        """data provider, multiple sources/status"""
         logger.info("extract providers")
         providers = list()
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
@@ -171,6 +168,7 @@ class Geonetwork:
 
     @staticmethod
     def extract_person(person: dict, roles: list | None = None):
+        """helper method"""
         logger.info("extract from person")
         provider_name = person[Soilgrids_Constants.individual_name_surname] + " " + person[Soilgrids_Constants.individual_name_given_name]
         provider_email = person[Soilgrids_Constants.electronic_email_address]
@@ -184,6 +182,7 @@ class Geonetwork:
 
     @staticmethod
     def extract_links() -> list[Link]:
+        """absolute links, unlike internal relative links"""
         logger.info("extract links")
         links = list()
         # isric

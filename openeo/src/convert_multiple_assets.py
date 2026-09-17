@@ -62,6 +62,8 @@ class ConvertMultipleAssets(STACInterface):
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
                 else:
+                    # TODO add absolute link to isric/soilgrids/lwe catalog
+                    # item.add_links()
                     items.append(item)
 
             # gather extents
@@ -102,7 +104,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            providers=collection_providers,
                                                            extra_fields=extra_fields)
 
-            # links
+            # absolute links
             links = Geonetwork.extract_links()
             soilgrids_collection.add_links(links)
 
@@ -176,6 +178,7 @@ class ConvertMultipleAssets(STACInterface):
     @staticmethod
     def create_asset(entry):
         """simple wrapper around Asset creation"""
+        # TODO add file-related properties
         asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
                                    title=entry[Soilgrids_Constants.title_key],
                                    media_type=pystac.MediaType.GEOTIFF)
