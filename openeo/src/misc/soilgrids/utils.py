@@ -1,5 +1,6 @@
 import logging
 import rasterio.warp
+from pystac import RelType, Link, MediaType
 from shapely.geometry import Polygon, mapping
 from src.misc.soilgrids.constants import Constants
 
@@ -87,3 +88,23 @@ class Utils:
     def build_catalog_url(uuid: str):
         """builds url for soilgrids dataset"""
         return Constants.geonetwork_base_url + Constants.geonetwork_query_path + uuid
+
+    @staticmethod
+    def create_links(rel_type: RelType) -> list[Link]:
+        """absolute links, unlike internal relative links"""
+        logger.info("extract links")
+        links = list()
+        # isric
+        url = Constants.isric_base_url
+        link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
+        links.append(link)
+        # soilgrids
+        url = Constants.soilgrids_base_url
+        link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
+        links.append(link)
+        # catalog
+        url = Utils.build_catalog_url(uuid=Constants.soilgrids_dataset_uuid)
+        link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
+        links.append(link)
+
+        return links

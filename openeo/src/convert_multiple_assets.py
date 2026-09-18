@@ -3,10 +3,9 @@ import logging
 import time
 from urllib.parse import urlparse
 from pathlib import Path
-import pystac
 from datetime import datetime
 
-from pystac import Asset
+from pystac import Asset, RelType, Extent, CatalogType, MediaType
 from pystac.extensions.eo import EOExtension
 from pystac.utils import datetime_to_str
 import rasterio
@@ -65,12 +64,13 @@ class ConvertMultipleAssets(STACInterface):
                     logger.warning(f"no item for {variable_name}")
                 else:
                     # TODO add absolute link to isric/soilgrids/lwe catalog
-                    # item.add_links()
+                    links = Soilgrids_Utils.create_links(RelType.VIA)
+                    item.add_links(links)
                     items.append(item)
 
             # gather extents
             spatial_extent, temporal_extent = Utils.infer_extents_from(items)
-            collection_extent = pystac.Extent(spatial=spatial_extent, temporal=temporal_extent)
+            collection_extent = Extent(spatial=spatial_extent, temporal=temporal_extent)
 
             # collection level
             keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, soilgrids_dataset)
@@ -107,7 +107,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            extra_fields=extra_fields)
 
             # absolute links
-            links = Geonetwork.extract_links()
+            links = Soilgrids_Utils.create_links(RelType.VIA)
             soilgrids_collection.add_links(links)
 
             # add bottom to top
@@ -117,7 +117,7 @@ class ConvertMultipleAssets(STACInterface):
 
         top_catalog.add_child(soilgrids_catalog)
         # top_catalog.describe()
-        top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=pystac.CatalogType.SELF_CONTAINED)
+        top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
 
     def create_item_from_rasters(self, variable_name: str, item_id: str, entries: list, projection: str):
         """
@@ -183,7 +183,7 @@ class ConvertMultipleAssets(STACInterface):
         # TODO add file-related properties
         asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
                                    title=entry[Soilgrids_Constants.title_key],
-                                   media_type=pystac.MediaType.GEOTIFF)
+                                   media_type=MediaType.GEOTIFF)
 
         return asset
 

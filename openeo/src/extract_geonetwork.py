@@ -179,23 +179,3 @@ class Geonetwork:
                                          url=provider_url)
 
         return provider
-
-    @staticmethod
-    def extract_links() -> list[Link]:
-        """absolute links, unlike internal relative links"""
-        logger.info("extract links")
-        links = list()
-        # isric
-        url = Soilgrids_Constants.isric_base_url
-        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
-        links.append(link)
-        # soilgrids
-        url = Soilgrids_Constants.soilgrids_base_url
-        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
-        links.append(link)
-        # catalog
-        url = Soilgrids_Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid)
-        link = Link(rel=RelType.VIA, target=url, media_type=MediaType.HTML)
-        links.append(link)
-
-        return links
