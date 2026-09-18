@@ -5,6 +5,8 @@ from urllib.parse import urlparse
 from pathlib import Path
 import pystac
 from datetime import datetime
+
+from pystac import Asset
 from pystac.extensions.eo import EOExtension
 from pystac.utils import datetime_to_str
 import rasterio
@@ -176,7 +178,7 @@ class ConvertMultipleAssets(STACInterface):
         return entries
 
     @staticmethod
-    def create_asset(entry):
+    def create_asset(entry) -> Asset:
         """simple wrapper around Asset creation"""
         # TODO add file-related properties
         asset = Utils.create_asset(href=entry[Soilgrids_Constants.href_key],
@@ -186,7 +188,7 @@ class ConvertMultipleAssets(STACInterface):
         return asset
 
     @staticmethod
-    def create_assets(entries: list):
+    def create_assets(entries: list) -> list[Asset]:
         """simple wrapper around multiple Assets creation"""
         logger.info(f"creating {str(len(entries))} assets")
         assets = list()

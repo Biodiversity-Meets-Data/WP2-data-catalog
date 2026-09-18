@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 import pystac
-from pystac import Extent, Provider, ProviderRole
+from pystac import Extent, Provider, ProviderRole, Link, Asset, Item, Collection, Catalog
 from pystac.extensions.eo import Band
 import shapely
 from shapely.geometry import Polygon, mapping, shape
@@ -16,10 +16,11 @@ logger = logging.getLogger(__name__)
 
 class Utils:
     """shared code, should be independent of the data source"""
+
     @staticmethod
-    def create_catalog(catalog_id: str, description: str):
+    def create_catalog(catalog_id: str, description: str) -> Catalog:
         logger.info(f"creating catalog {catalog_id}")
-        catalog = pystac.Catalog(id=catalog_id, description=description)
+        catalog = Catalog(id=catalog_id, description=description)
 
         return catalog
 
@@ -31,30 +32,30 @@ class Utils:
                           license: str | None = None,
                           keywords: list[str] | None = None,
                           providers: list[Provider] | None = None,
-                          extra_fields: dict[str, Any] | None = None):
+                          extra_fields: dict[str, Any] | None = None) -> Collection:
         logger.info(f"creating collection {collection_id}")
-        collection = pystac.Collection(id=collection_id,
-                                       title=title,
-                                       description=description,
-                                       extent=extent,
-                                       license=license,
-                                       keywords=keywords,
-                                       providers=providers,
-                                       stac_extensions=[
-                                            "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
-                                       ],
-                                       extra_fields=extra_fields)
+        collection = Collection(id=collection_id,
+                                title=title,
+                                description=description,
+                                extent=extent,
+                                license=license,
+                                keywords=keywords,
+                                providers=providers,
+                                stac_extensions=[
+                                    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
+                                ],
+                                extra_fields=extra_fields)
 
         return collection
 
     @staticmethod
-    def create_item(item_id: str, polygon, bbox, datetime, start_datetime, end_datetime, src, proj_bounds):
+    def create_item(item_id: str, polygon, bbox, datetime, start_datetime, end_datetime, src, proj_bounds) -> Item:
         """
         packs metadata into a STAC Item
         @todo add more properties (variable name, date, geometry, url), needed by cubing engine
         """
         logger.info(f"creating item {item_id}")
-        item = pystac.Item(
+        item = Item(
             id=item_id,
             geometry=polygon,
             bbox=bbox,
@@ -63,7 +64,8 @@ class Utils:
             end_datetime=end_datetime,
             properties={  # These properties are optional, but can speed up the loading of the data.
                 "proj:epsg": src.crs.to_epsg(),
-                "proj:shape": src.shape,  # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
+                "proj:shape": src.shape,
+                # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
                 "proj:bbox": proj_bounds,
             },
             stac_extensions=[
@@ -75,15 +77,15 @@ class Utils:
         return item
 
     @staticmethod
-    def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties):
+    def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties) -> Item:
         logger.info(f"creating simple item {item_id}")
-        item = pystac.Item(id=item_id, bbox=bbox, datetime=datetime, start_datetime=start_datetime,
-                           end_datetime=end_datetime, geometry=geometry, properties=properties)
+        item = Item(id=item_id, bbox=bbox, datetime=datetime, start_datetime=start_datetime,
+                    end_datetime=end_datetime, geometry=geometry, properties=properties)
 
         return item
 
     @staticmethod
-    def create_asset(href: str, title: str, media_type: str):
+    def create_asset(href: str, title: str, media_type: str) -> Asset:
         """
         @todo add roles=["data"]
         :param href:
@@ -92,7 +94,7 @@ class Utils:
         :return:
         """
         logger.info(f"creating asset {href}")
-        asset = pystac.Asset(
+        asset = Asset(
             href=href,
             title=title,
             media_type=media_type,
@@ -102,7 +104,7 @@ class Utils:
         return asset
 
     @staticmethod
-    def create_bands(band_names):
+    def create_bands(band_names) -> list[Band]:
         bands = list()
 
         for band_name in band_names:
@@ -111,19 +113,19 @@ class Utils:
         return bands
 
     @staticmethod
-    def create_link(rel: str, href: str, type: str, title: str):
+    def create_link(rel: str, href: str, type: str, title: str) -> Link:
         logger.info(f"creating link {href}")
-        link = pystac.Link(rel=rel, target=href, media_type=type, title=title)
+        link = Link(rel=rel, target=href, media_type=type, title=title)
 
         return link
 
     @staticmethod
-    def create_providers(names: list[str]):
+    def create_providers(names: list[str]) -> list[Provider]:
         logger.info(f"creating {len(names)} providers")
         providers = list()
 
         for name in names:
-            provider = pystac.Provider(name=name)
+            provider = Provider(name=name)
             providers.append(provider)
 
         return providers
@@ -132,14 +134,14 @@ class Utils:
     def create_provider(name: str,
                         url: str | None = None,
                         roles: list[ProviderRole] | None = None,
-                        email: str | None = None):
+                        email: str | None = None) -> Provider:
         logger.info(f"creating provider {name}")
         extra_fields = None
 
         if email is not None:
             extra_fields = {Soilgrids_Constants.email_key: email}
 
-        provider = pystac.Provider(name=name, url=url, roles=roles, extra_fields=extra_fields)
+        provider = Provider(name=name, url=url, roles=roles, extra_fields=extra_fields)
 
         return provider
 

@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from pystac import RelType, MediaType, Link, ProviderRole
+from pystac import RelType, MediaType, Link, ProviderRole, Provider
 
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
@@ -98,7 +98,7 @@ class Geonetwork:
         return citations
 
     @staticmethod
-    def extract_citations(method_steps: dict):
+    def extract_citations(method_steps: dict) -> list[dict]:
         """should only contain a single citation"""
         logger.info("extract citations")
         citations = []
@@ -112,7 +112,7 @@ class Geonetwork:
         return citations
 
     @staticmethod
-    def extract_providers(dataset: dict):
+    def extract_providers(dataset: dict) -> list[Provider]:
         """data provider, multiple sources/status"""
         logger.info("extract providers")
         providers = list()
@@ -167,7 +167,7 @@ class Geonetwork:
         return providers
 
     @staticmethod
-    def extract_person(person: dict, roles: list | None = None):
+    def extract_person(person: dict, roles: list | None = None) -> Provider:
         """helper method"""
         logger.info("extract from person")
         provider_name = person[Soilgrids_Constants.individual_name_surname] + " " + person[Soilgrids_Constants.individual_name_given_name]
