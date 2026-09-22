@@ -339,7 +339,7 @@ There is only one soilgrids dataset in the geonetwork catalogue, its uuid is
 To query the Lifewatch ERIC API and use existing, recorded data instead of hard-coding information:
 
 ```html
-https://metadatacatalogue.lifewatch.eu//srv/api/records?uuid=8315df49-bde3-4138-8f71-9b722f3afd06
+https://metadatacatalogue.lifewatch.eu/srv/api/records?uuid=8315df49-bde3-4138-8f71-9b722f3afd06
 ```
 
 To test the query :

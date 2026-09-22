@@ -108,3 +108,13 @@ class Utils:
         links.append(link)
 
         return links
+
+    @staticmethod
+    def create_item_id(collection_id: str, variable_name: str):
+        """create soilgrids item identifier"""
+        return f"{collection_id}_item_{variable_name}"
+
+    @staticmethod
+    def create_collection_id(resolution: int):
+        """create soilgrids collection identifier"""
+        return f"soilgrids_collection_{resolution}m"

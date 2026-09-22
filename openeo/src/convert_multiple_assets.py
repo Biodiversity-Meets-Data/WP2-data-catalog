@@ -55,15 +55,20 @@ class ConvertMultipleAssets(STACInterface):
 
         for resolution in resolutions:
             items = list()
+            # collection id
+            collection_id = Soilgrids_Utils.create_collection_id(resolution)
 
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item = self.create_item_from_rasters(variable_name, f"item_{variable_name}_{resolution}m", entries, self.projection)
+                item_id = Soilgrids_Utils.create_item_id(collection_id=collection_id, variable_name=variable_name)
+                item = self.create_item_from_rasters(variable_name,
+                                                     item_id=item_id,
+                                                     entries=entries,
+                                                     projection=self.projection)
 
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
                 else:
-                    # TODO add absolute link to isric/soilgrids/lwe catalog
                     links = Soilgrids_Utils.create_links(RelType.VIA)
                     item.add_links(links)
                     items.append(item)
@@ -97,9 +102,9 @@ class ConvertMultipleAssets(STACInterface):
                 "sci:citation": first_citation
             }
 
-            soilgrids_collection = Utils.create_collection(f"soilgrids_collection_{resolution}m",
-                                                           collection_title,
-                                                           collection_description,
+            soilgrids_collection = Utils.create_collection(collection_id=collection_id,
+                                                           title=collection_title,
+                                                           description=collection_description,
                                                            extent=collection_extent,
                                                            license=collection_license_name,
                                                            keywords=collection_keywords,
