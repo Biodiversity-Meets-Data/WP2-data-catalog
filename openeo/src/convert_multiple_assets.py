@@ -17,6 +17,9 @@ from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
 from src.misc.geonetwork.geonetwork import Geonetwork
+from src.misc.geonetwork.extraction import Extraction
+from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
+from src.misc.geonetwork.extraction_eml import ExtractionEML
 from src.stac_interface import STACInterface
 
 logger = logging.getLogger(__name__)
@@ -43,6 +46,15 @@ class ConvertMultipleAssets(STACInterface):
         # TODO: add dates, geometry
         # get geonetwork dataset
         query_type = Soilgrids_Constants.elastic_value
+
+        # TODO will replace static implementation
+        if query_type == Soilgrids_Constants.elastic_value:
+            extractor = ExtractionElasticsearch
+        elif query_type == Soilgrids_Constants.eml_value:
+            extractor = ExtractionEML
+        else:
+            raise Exception(f"incorrect type {query_type}")
+
         soilgrids_dataset = Geonetwork.query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=query_type)
 
         # create top to bottom
