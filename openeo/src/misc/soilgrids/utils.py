@@ -85,12 +85,17 @@ class Utils:
         return proj_bounds, bbox, polygon
 
     @staticmethod
-    def build_catalog_url(uuid: str):
+    def build_catalog_url(uuid: str, query_type: str):
         """builds url for soilgrids dataset"""
-        return Constants.geonetwork_base_url + Constants.geonetwork_query_path + uuid
+        if query_type == Constants.elastic_value:
+            return Constants.geonetwork_base_url + Constants.geonetwork_query_path_old + uuid
+        elif query_type == Constants.eml_value:
+            return Constants.geonetwork_base_url + Constants.geonetwork_query_path + uuid + Constants.geonetwork_query_path_format
+        else:
+            raise Exception(f"unknown action {query_type}")
 
     @staticmethod
-    def create_links(rel_type: RelType) -> list[Link]:
+    def create_links(rel_type: RelType, action: str) -> list[Link]:
         """absolute links, unlike internal relative links"""
         logger.info("extract links")
         links = list()
@@ -103,7 +108,7 @@ class Utils:
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # catalog
-        url = Utils.build_catalog_url(uuid=Constants.soilgrids_dataset_uuid)
+        url = Utils.build_catalog_url(uuid=Constants.soilgrids_dataset_uuid, query_type=action)
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
 

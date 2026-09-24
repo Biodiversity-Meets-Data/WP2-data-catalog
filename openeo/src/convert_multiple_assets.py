@@ -16,7 +16,7 @@ from shapely.ops import unary_union
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
-from src.extract_geonetwork import Geonetwork
+from src.misc.geonetwork.geonetwork import Geonetwork
 from src.stac_interface import STACInterface
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,8 @@ class ConvertMultipleAssets(STACInterface):
         """
         # TODO: add dates, geometry
         # get geonetwork dataset
-        soilgrids_dataset = Geonetwork.query_dataset(Soilgrids_Constants.soilgrids_dataset_uuid)
+        query_type = Soilgrids_Constants.elastic_value
+        soilgrids_dataset = Geonetwork.query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=query_type)
 
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
@@ -69,7 +70,7 @@ class ConvertMultipleAssets(STACInterface):
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
                 else:
-                    links = Soilgrids_Utils.create_links(RelType.VIA)
+                    links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=query_type)
                     item.add_links(links)
                     items.append(item)
 
@@ -112,7 +113,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            extra_fields=extra_fields)
 
             # absolute links
-            links = Soilgrids_Utils.create_links(RelType.VIA)
+            links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=query_type)
             soilgrids_collection.add_links(links)
 
             # add bottom to top

@@ -1,7 +1,7 @@
 import logging
 
 import requests
-from pystac import RelType, MediaType, Link, ProviderRole, Provider
+from pystac import ProviderRole, Provider
 
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
@@ -12,30 +12,60 @@ logger = logging.getLogger(__name__)
 
 class Geonetwork:
     @staticmethod
-    def query_dataset(uuid: str):
+    def query_dataset(uuid: str, query_type: str):
         """entry point, main query"""
         logger.info(f"query dataset {uuid}")
 
         # Set up your server and the query URL:
-        query_url = Soilgrids_Utils.build_catalog_url(uuid=uuid)
+        query_url = Soilgrids_Utils.build_catalog_url(uuid=uuid, query_type=query_type)
         logger.info(f"query url: {query_url}")
 
         # Send a get request to the endpoint
-        response = requests.get(query_url, timeout=Soilgrids_Constants.timeout)
-        dataset = Geonetwork.check_response(response)
+        headers = {
+            "Accept": "application/json"
+        }
+        response = requests.get(query_url, headers=headers, timeout=Soilgrids_Constants.timeout)
+
+        if query_type == Soilgrids_Constants.elastic_value:
+            dataset = Geonetwork.check_elasticsearch_response(response)
+        elif query_type == Soilgrids_Constants.eml_value:
+            dataset = Geonetwork.check_response(response)
+        else:
+            raise Exception(f"incorrect query type {query_type}")
 
         return dataset
 
     @staticmethod
-    def check_response(geonetwork_response):
-        """checks elasticsearch response, contains the original dataset"""
-        logger.info("parse geonetwork response")
+    def check_http_response(geonetwork_response):
+        """basic http check, convert to json"""
+        logger.info("parse geonetwork http response")
 
         # check http code
-        if geonetwork_response.status_code != 200:
-            raise Exception("response is not 200")
+        status_code = geonetwork_response.status_code
+        if status_code != 200:
+            raise Exception(f"response is not 200: {status_code}")
 
         json = geonetwork_response.json()
+
+        return json
+
+    @staticmethod
+    def check_response(geonetwork_response):
+        """check response, contains the original dataset"""
+        logger.info("parse geonetwork response")
+
+        json = Geonetwork.check_http_response(geonetwork_response=geonetwork_response)
+        result = Utils.check_key(Soilgrids_Constants.dataset_key, json)
+        Geonetwork.check_eml_dataset_content(result)
+
+        return result
+
+    @staticmethod
+    def check_elasticsearch_response(geonetwork_response):
+        """checks elasticsearch response, contains the original dataset"""
+        logger.info("parse geonetwork elasticsearch response")
+
+        json = Geonetwork.check_http_response(geonetwork_response=geonetwork_response)
         # verify content
         tmp = Utils.check_key(Soilgrids_Constants.hits_key, json)
         tmp = Utils.check_key(Soilgrids_Constants.hits_key, tmp)
@@ -45,15 +75,27 @@ class Geonetwork:
 
         hit = tmp[0]
         result = Utils.check_key(Soilgrids_Constants.source_key, hit)
-        Geonetwork.check_dataset(result)
+        Geonetwork.check_elasticsearch_dataset_content(result)
 
         return result
 
     @staticmethod
-    def check_dataset(dataset: dict):
-        logger.info("check dataset content")
+    def check_eml_dataset_content(dataset: dict):
         """check for presence of important keys"""
+        logger.info("check dataset content (eml format)")
+        project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+        # singular in dataset
+        creators = Utils.check_key(Soilgrids_Constants.creator_key, dataset)
+        # singular in dataset
+        contacts = Utils.check_key(Soilgrids_Constants.contact_key, dataset)
+        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
+        keyword_set = Utils.check_key(Soilgrids_Constants.keyword_set, dataset)
 
+    @staticmethod
+    def check_elasticsearch_dataset_content(dataset: dict):
+        """check for presence of important keys"""
+        logger.info("check elasticsearch dataset content")
         project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
@@ -63,6 +105,7 @@ class Geonetwork:
         license_name = Utils.check_key(Soilgrids_Constants.license_name_key, dataset)
         intellectual_rights = Utils.check_key(Soilgrids_Constants.intellectual_rights_key, dataset)
         methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
+        keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
 
     @staticmethod
     def parse_data_tables(data_tables: dict):
