@@ -109,6 +109,13 @@ class ExtractionElasticsearch(Extraction):
 
         return provider
 
+    def parse_methods(self, methods: dict):
+        logger.info("parse methods")
+        steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
+        citations = self.extract_citations(steps)
+
+        return citations
+
     def extract_citations(self, method_steps: dict) -> list[dict]:
         """should only contain a single citation"""
         logger.info("extract citations")
@@ -121,3 +128,26 @@ class ExtractionElasticsearch(Extraction):
             raise Exception("incorrect number of citations")
 
         return citations
+
+    def parse_data_tables(self, data_tables: dict):
+        logger.info("parse data tables")
+        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, data_tables)
+        variables = self.extract_variable_names(attributes)
+
+        return variables
+
+    def extract_variable_names(self, attributes: dict):
+        logger.info("extract variable names")
+        """to be compared with the hardcoded attributes"""
+        variables = []
+
+        for attribute in attributes:
+            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
+            variables.append(name)
+
+        diff = set(variables).symmetric_difference(Soilgrids_Constants.VARIABLE_NAMES)
+
+        if len(diff) != 0:
+            raise Exception(f"comparing available attributes failed: %s", diff)
+
+        return variables
