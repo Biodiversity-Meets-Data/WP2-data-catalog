@@ -1,9 +1,123 @@
 import logging
 
+from pystac import Provider, ProviderRole
+
+from src.misc.utils import Utils
 from src.misc.geonetwork.extraction import Extraction
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 
 
 class ExtractionElasticsearch(Extraction):
-    pass
+    def check_response(self, geonetwork_response: dict) -> dict:
+        """checks elasticsearch response, contains the original dataset"""
+        logger.info("parse geonetwork elasticsearch response")
+
+        json = super().check_http_response(geonetwork_response=geonetwork_response)
+        # verify content
+        tmp = Utils.check_key(Soilgrids_Constants.hits_key, json)
+        tmp = Utils.check_key(Soilgrids_Constants.hits_key, tmp)
+
+        if len(tmp) != 1:
+            raise Exception("incorrect number of hits")
+
+        hit = tmp[0]
+        result = Utils.check_key(Soilgrids_Constants.source_key, hit)
+        self.check_dataset(result)
+
+        return result
+
+    def check_dataset(self, dataset: dict):
+        """check for presence of important keys"""
+        logger.info("check elasticsearch dataset content")
+        project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+        creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
+        contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
+        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
+        license_url = Utils.check_key(Soilgrids_Constants.license_url_key, dataset)
+        license_name = Utils.check_key(Soilgrids_Constants.license_name_key, dataset)
+        intellectual_rights = Utils.check_key(Soilgrids_Constants.intellectual_rights_key, dataset)
+        methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
+        keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
+
+    def extract_providers(self, dataset: dict) -> list[Provider]:
+        """data provider, multiple sources/status"""
+        logger.info("extract providers")
+        providers = list()
+        creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
+        contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
+        metadata_providers = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+
+        # people as producer ?
+        creator_roles = [ProviderRole.PRODUCER]
+        for creator in creators:
+            provider = self.extract_person(creator, creator_roles)
+            providers.append(provider)
+
+        # soilgrids as producer, licensor, host (currently)
+        contact_roles = [ProviderRole.PRODUCER,
+                         ProviderRole.LICENSOR,
+                         ProviderRole.HOST]
+        for contact in contacts:
+            provider_name = contact[Soilgrids_Constants.organization_name]
+            provider_email = contact[Soilgrids_Constants.electronic_email_address]
+            provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
+            providers.append(provider)
+
+        # BMD as processor, host
+        bmd_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
+        bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
+                                             roles=bmd_roles,
+                                             url=Soilgrids_Constants.BMD_DOI)
+        providers.append(bmd_provider)
+
+        # LWE catalog
+        lwe_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
+        provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+                                         roles=lwe_roles,
+                                         url=Soilgrids_Constants.geonetwork_base_url)
+        providers.append(provider)
+
+        # chiara
+        metadata_roles = [ProviderRole.PROCESSOR]
+        for metadata_provider in metadata_providers:
+            provider = self.extract_person(metadata_provider, roles=metadata_roles)
+            providers.append(provider)
+
+        # SIB
+        provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
+                                         roles=metadata_roles,
+                                         url=Soilgrids_Constants.SIB_URL)
+        providers.append(provider)
+
+        return providers
+
+    def extract_person(self, person: dict, roles: list | None = None) -> Provider:
+        """helper method"""
+        logger.info("extract from person")
+        provider_name = person[Soilgrids_Constants.individual_name_surname] + " " + person[Soilgrids_Constants.individual_name_given_name]
+        provider_email = person[Soilgrids_Constants.electronic_email_address]
+        provider_url = person[Soilgrids_Constants.user_id]
+        provider = Utils.create_provider(name=provider_name,
+                                         roles=roles,
+                                         email=provider_email,
+                                         url=provider_url)
+
+        return provider
+
+    def extract_citations(self, method_steps: dict) -> list[dict]:
+        """should only contain a single citation"""
+        logger.info("extract citations")
+        citations = []
+
+        for step in method_steps:
+            citations.append(Utils.check_key(Soilgrids_Constants.citation_key, step))
+
+        if len(citations) != 1:
+            raise Exception("incorrect number of citations")
+
+        return citations

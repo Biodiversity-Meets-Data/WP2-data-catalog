@@ -1,17 +1,16 @@
 import logging
-
 import requests
+
 from pystac import ProviderRole, Provider
 
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
-from src.misc.geonetwork.extraction import Extraction
 
 logger = logging.getLogger(__name__)
 
 
-class Geonetwork(Extraction):
+class Geonetwork():
     @staticmethod
     def query_dataset(uuid: str, query_type: str):
         """entry point, main query"""
@@ -35,6 +34,20 @@ class Geonetwork(Extraction):
             raise Exception(f"incorrect query type {query_type}")
 
         return dataset
+
+    @staticmethod
+    def check_http_response(geonetwork_response):
+        """basic http check, convert to json"""
+        logger.info("parse geonetwork http response")
+
+        # check http code
+        status_code = geonetwork_response.status_code
+        if status_code != 200:
+            raise Exception(f"response is not 200: {status_code}")
+
+        json = geonetwork_response.json()
+
+        return json
 
     @staticmethod
     def check_response(geonetwork_response):

@@ -3,9 +3,10 @@ import argparse
 import logging
 import requests
 import json
-from src.misc.geonetwork.geonetwork import Geonetwork
+
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
+from src.misc.geonetwork.extraction_elasticsearch import Extraction
 
 # setup logging
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -28,8 +29,10 @@ logger.info(f"query url: {query_url}")
 response = requests.get(query_url, timeout=Soilgrids_Constants.timeout)
 
 try:
-    Geonetwork.query_dataset(uuid=args.uuid, query_type=Soilgrids_Constants.elastic_value)
-    dataset = Geonetwork.check_elasticsearch_response(response)
+    query_value = Soilgrids_Constants.elastic_value
+    extractor = Extraction.get_instance(query_type=query_value)
+    extractor.query_dataset(uuid=args.uuid, query_type=query_value)
+    dataset = extractor.check_response(response)
     print(json.dumps(dataset))
 except Exception as e:
     logger.exception(f"global exception: {str(e)}")
