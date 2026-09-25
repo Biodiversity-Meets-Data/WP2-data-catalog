@@ -112,13 +112,14 @@ class ExtractionElasticsearch(Extraction):
     def parse_methods(self, methods: dict):
         logger.info("parse methods")
         steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
-        citations = self.extract_citations(steps)
+        citations = self.extract_citation(steps)
 
         return citations
 
-    def extract_citations(self, method_steps: dict) -> list[dict]:
+    def extract_citation(self, methods: dict) -> str:
         """should only contain a single citation"""
         logger.info("extract citations")
+        method_steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
         citations = []
 
         for step in method_steps:
@@ -127,7 +128,7 @@ class ExtractionElasticsearch(Extraction):
         if len(citations) != 1:
             raise Exception("incorrect number of citations")
 
-        return citations
+        return citations[0]
 
     def parse_data_tables(self, data_tables: dict):
         logger.info("parse data tables")
@@ -151,3 +152,8 @@ class ExtractionElasticsearch(Extraction):
             raise Exception(f"comparing available attributes failed: %s", diff)
 
         return variables
+
+    def extract_keywords(self, dataset: dict) -> list[str]:
+        keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
+
+        return keywords_kpi

@@ -30,7 +30,7 @@ class ExtractionEML(Extraction):
         contacts = Utils.check_key(Soilgrids_Constants.contact_key, dataset)
         metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
         methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
-        keyword_set = Utils.check_key(Soilgrids_Constants.keyword_set, dataset)
+        keyword_set = Utils.check_key(Soilgrids_Constants.keyword_set_key, dataset)
 
     def extract_providers(self, dataset: dict) -> list[Provider]:
         raise Exception("unimplemented")
@@ -38,5 +38,20 @@ class ExtractionEML(Extraction):
     def extract_person(self, person: dict, roles: list | None = None) -> Provider:
         raise Exception("unimplemented")
 
-    def extract_citations(self, method_steps: dict) -> list[dict]:
-        raise Exception("unimplemented")
+    def extract_citation(self, methods: dict) -> str:
+        logger.info("extract citations")
+        steps = Utils.check_key(key=Soilgrids_Constants.keyword_set_key, wrapper=methods)
+        citation = Utils.check_key(key=Soilgrids_Constants.citation_key, wrapper=steps)
+
+        return citation
+
+    def extract_keywords(self, dataset: dict) -> list[str]:
+        logger.info("extract keywords")
+        keywords = list()
+        keyword_set = Utils.check_key(key=Soilgrids_Constants.keyword_set_key, wrapper=dataset)
+
+        for wrapper in keyword_set:
+            keyword = Utils.check_key(key=Soilgrids_Constants.keyword_key, wrapper=wrapper)
+            keywords.append(keyword)
+
+        return keywords

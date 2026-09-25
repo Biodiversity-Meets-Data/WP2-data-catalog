@@ -72,5 +72,8 @@ class Extraction(ABC):
         pass
 
     @abstractmethod
-    def extract_citations(self, method_steps: dict) -> list[dict]:
+    def extract_citation(self, methods: dict) -> str:
+        pass
+
+    def extract_keywords(self, dataset: dict) -> list[str]:
         pass

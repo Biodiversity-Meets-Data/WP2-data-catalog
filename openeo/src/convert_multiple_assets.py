@@ -82,9 +82,9 @@ class ConvertMultipleAssets(STACInterface):
             collection_extent = Extent(spatial=spatial_extent, temporal=temporal_extent)
 
             # collection level
-            keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, soilgrids_dataset)
+            keywords = extractor.extract_keywords(dataset=soilgrids_dataset)
             # make it unique with set()
-            collection_keywords = list(set(list(("soilgrids", "aggregated", resolution)) + variable_names + keywords_kpi))
+            collection_keywords = list(set(list(("soilgrids", "aggregated", resolution)) + variable_names + keywords))
             collection_license_name = Utils.check_key(Soilgrids_Constants.license_name_key, soilgrids_dataset)
             license_url = Utils.check_key(Soilgrids_Constants.license_url_key, soilgrids_dataset)
             collection_license_link = Utils.create_link(rel="license",
@@ -99,8 +99,7 @@ class ConvertMultipleAssets(STACInterface):
             collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
             # citations
             methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
-            method_steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
-            first_citation = extractor.extract_citations(method_steps=method_steps)[0]
+            first_citation = extractor.extract_citation(methods=methods)
             # extra fields
             extra_fields = {
                 "sci:citation": first_citation
