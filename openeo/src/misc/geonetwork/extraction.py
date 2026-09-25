@@ -3,12 +3,13 @@ import requests
 
 from abc import ABC, abstractmethod
 
-from pystac import Provider
+from pystac import Provider, ProviderRole
 
 from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
 from src.misc.geonetwork.extraction_eml import ExtractionEML
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.utils import Utils
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,9 @@ class Extraction(ABC):
 
         return dataset
 
+    def build_name(self, surname: str, given_name: str):
+        return surname + " " + given_name
+
     @abstractmethod
     def check_response(self, geonetwork_response) -> dict:
         pass
@@ -76,4 +80,16 @@ class Extraction(ABC):
         pass
 
     def extract_keywords(self, dataset: dict) -> list[str]:
+        pass
+
+    def extract_title_description(self, project: dict) -> str:
+        pass
+
+    # def extract_title(self, dataset: dict) -> str:
+    #     pass
+    #
+    # def extract_description(self, dataset: dict) -> str:
+    #     pass
+
+    def extract_license(self, dataset: dict):
         pass

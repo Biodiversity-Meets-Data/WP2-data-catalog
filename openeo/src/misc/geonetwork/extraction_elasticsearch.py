@@ -61,9 +61,10 @@ class ExtractionElasticsearch(Extraction):
                          ProviderRole.LICENSOR,
                          ProviderRole.HOST]
         for contact in contacts:
-            provider_name = contact[Soilgrids_Constants.organization_name]
-            provider_email = contact[Soilgrids_Constants.electronic_email_address]
-            provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
+            # provider_name = contact[Soilgrids_Constants.organization_name_key]
+            # provider_email = contact[Soilgrids_Constants.electronic_email_address_key]
+            # provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
+            provider = self.extract_person(contact, contact_roles)
             providers.append(provider)
 
         # BMD as processor, host
@@ -99,22 +100,16 @@ class ExtractionElasticsearch(Extraction):
     def extract_person(self, person: dict, roles: list | None = None) -> Provider:
         """helper method"""
         logger.info("extract from person")
-        provider_name = person[Soilgrids_Constants.individual_name_surname] + " " + person[Soilgrids_Constants.individual_name_given_name]
-        provider_email = person[Soilgrids_Constants.electronic_email_address]
-        provider_url = person[Soilgrids_Constants.user_id]
+        provider_name = super().build_name(person[Soilgrids_Constants.individual_name_surname_key],
+                                           person[Soilgrids_Constants.individual_name_given_name_key])
+        provider_email = person[Soilgrids_Constants.electronic_email_address_key]
+        provider_url = person[Soilgrids_Constants.user_id_key]
         provider = Utils.create_provider(name=provider_name,
                                          roles=roles,
                                          email=provider_email,
                                          url=provider_url)
 
         return provider
-
-    def parse_methods(self, methods: dict):
-        logger.info("parse methods")
-        steps = Utils.check_key(Soilgrids_Constants.method_steps_key, methods)
-        citations = self.extract_citation(steps)
-
-        return citations
 
     def extract_citation(self, methods: dict) -> str:
         """should only contain a single citation"""
@@ -154,6 +149,29 @@ class ExtractionElasticsearch(Extraction):
         return variables
 
     def extract_keywords(self, dataset: dict) -> list[str]:
+        logger.info("extract keywords")
         keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
 
         return keywords_kpi
+
+    # def extract_title(self, dataset: dict) -> str:
+    #     project_data = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+    #     collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
+    #
+    #     return collection_title
+    #
+    # def extract_description(self, dataset: dict) -> str:
+    #     project_data = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+    #     collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
+    #
+    #     return collection_description
+
+    def extract_title_description(self, project: dict) -> list[str]:
+        logger.info("extract title and description")
+        collection_title = Utils.check_key(Soilgrids_Constants.title_key, project)
+        collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project)
+
+        return [collection_title, collection_description]
+
+    def extract_license(self, dataset: dict):
+        raise Exception("not implemented")

@@ -94,9 +94,10 @@ class ConvertMultipleAssets(STACInterface):
             # many providers
             collection_providers = extractor.extract_providers(soilgrids_dataset)
             # wrapper for title and description
-            project_data = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
-            collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
-            collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
+            project = Utils.check_key(Soilgrids_Constants.project_key, soilgrids_dataset)
+            tmp = extractor.extract_title_description(project=project)
+            collection_title = tmp[0]
+            collection_description = tmp[1]
             # citations
             methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
             first_citation = extractor.extract_citation(methods=methods)
