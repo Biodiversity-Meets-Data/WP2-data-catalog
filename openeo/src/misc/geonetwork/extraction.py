@@ -3,10 +3,8 @@ import requests
 
 from abc import ABC, abstractmethod
 
-from pystac import Provider, ProviderRole
+from pystac import Provider
 
-from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
-from src.misc.geonetwork.extraction_eml import ExtractionEML
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.utils import Utils
@@ -16,15 +14,6 @@ logger = logging.getLogger(__name__)
 
 class Extraction(ABC):
     """base class for geonetwork stuff"""
-
-    @staticmethod
-    def get_instance(query_type: str):
-        if query_type == Soilgrids_Constants.elastic_value:
-            return ExtractionElasticsearch()
-        elif query_type == Soilgrids_Constants.eml_value:
-            return ExtractionEML()
-        else:
-            raise Exception(f"incorrect type {query_type}")
 
     def check_http_response(self, geonetwork_response):
         """basic http check, convert to json"""

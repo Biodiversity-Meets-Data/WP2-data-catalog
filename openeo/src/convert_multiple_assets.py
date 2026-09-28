@@ -44,7 +44,14 @@ class ConvertMultipleAssets(STACInterface):
         # TODO: add dates, geometry
         # get geonetwork dataset
         query_type = Soilgrids_Constants.elastic_value
-        extractor = Extraction.get_instance(query_type=query_type)
+
+        if query_type == Soilgrids_Constants.elastic_value:
+            extractor = ExtractionElasticsearch()
+        elif query_type == Soilgrids_Constants.eml_value:
+            extractor = ExtractionEML()
+        else:
+            raise Exception(f"incorrect type {query_type}")
+
         soilgrids_dataset = extractor.query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid,
                                                     query_type=query_type)
 
