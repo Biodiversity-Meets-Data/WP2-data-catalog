@@ -9,6 +9,7 @@ from pystac import Asset, RelType, Extent, CatalogType, MediaType
 from pystac.extensions.eo import EOExtension
 import rasterio
 import rasterio.warp
+from pystac.extensions.raster import RasterExtension
 from rasterio import RasterioIOError
 from shapely.geometry import box, mapping
 from shapely.ops import unary_union
@@ -63,6 +64,7 @@ class ConvertMultipleAssets(STACInterface):
         resolutions = Soilgrids_Constants.RESOLUTIONS
         # variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
         variable_names = Soilgrids_Constants.VARIABLE_NAMES
+        attributes = extractor.extract_attributes(soilgrids_dataset)
 
         for resolution in resolutions:
             items = list()
@@ -75,7 +77,8 @@ class ConvertMultipleAssets(STACInterface):
                 item = self.create_item_from_rasters(variable_name,
                                                      item_id=item_id,
                                                      entries=entries,
-                                                     projection=self.projection)
+                                                     projection=self.projection,
+                                                     attributes=attributes)
 
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
@@ -135,7 +138,8 @@ class ConvertMultipleAssets(STACInterface):
         # top_catalog.describe()
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
 
-    def create_item_from_rasters(self, variable_name: str, item_id: str, entries: list, projection: str):
+    def create_item_from_rasters(self, variable_name: str, item_id: str, entries: list, projection: str,
+                                 attributes: dict):
         """
         - reads multiple urls (if they exist), each associated with a variable
         - create a single Item
@@ -173,6 +177,13 @@ class ConvertMultipleAssets(STACInterface):
 
                     eo = EOExtension.ext(asset, add_if_missing=True)
                     eo.apply(bands=Utils.create_bands([band_name]))
+
+                    # reuse attribute data read from the datasource (catalog)
+                    if variable_name in attributes:
+                        logger.info("there are attributes to add")
+                        raster_band = Utils.create_raster_band(attributes[variable_name])
+                        raster_ext = RasterExtension.ext(asset, add_if_missing=True)
+                        raster_ext.apply(bands=[raster_band])
 
             item.validate()
             return item

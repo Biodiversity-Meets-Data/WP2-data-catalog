@@ -7,6 +7,7 @@ import pystac
 from pystac import Extent, Provider, ProviderRole, Link, Asset, Item, Collection, Catalog
 from pystac.extensions.eo import Band
 import shapely
+from pystac.extensions.raster import RasterBand
 from shapely.geometry import Polygon, mapping, shape
 import rasterio
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
@@ -71,6 +72,7 @@ class Utils:
             stac_extensions=[
                 "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
                 "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+                "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
             ]
         )
 
@@ -111,6 +113,14 @@ class Utils:
             bands.append(Band.create(name=band_name, description=band_name))
 
         return bands
+
+    @staticmethod
+    def create_raster_band(wrapper: dict) -> RasterBand:
+        """it seems it is the only way to set a unit"""
+        unit = Utils.check_key(Soilgrids_Constants.attribute_standard_unit_key, wrapper)
+        band = RasterBand.create(unit=unit)
+
+        return band
 
     @staticmethod
     def create_link(rel: str, href: str, type: str, title: str) -> Link:

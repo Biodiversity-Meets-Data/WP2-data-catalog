@@ -128,23 +128,7 @@ class ExtractionElasticsearch(Extraction):
     def parse_data_tables(self, data_tables: dict):
         logger.info("parse data tables")
         attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, data_tables)
-        variables = self.extract_variable_names(attributes)
-
-        return variables
-
-    def extract_variable_names(self, attributes: dict):
-        logger.info("extract variable names")
-        """to be compared with the hardcoded attributes"""
-        variables = []
-
-        for attribute in attributes:
-            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
-            variables.append(name)
-
-        diff = set(variables).symmetric_difference(Soilgrids_Constants.VARIABLE_NAMES)
-
-        if len(diff) != 0:
-            raise Exception(f"comparing available attributes failed: %s", diff)
+        variables = self.extract_attributes(attributes)
 
         return variables
 
@@ -153,6 +137,25 @@ class ExtractionElasticsearch(Extraction):
         keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
 
         return keywords_kpi
+
+    def extract_attributes(self, dataset: list) -> dict:
+        logger.info("extract attributes")
+        datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
+        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatables[0])
+        """to be compared with the hardcoded attributes ?"""
+        result = {}
+
+        for attribute in attributes:
+            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
+            # unit = Utils.check_key(Soilgrids_Constants.attribute_standard_unit_key, attribute)
+            # description = Utils.check_key(Soilgrids_Constants.description_key, attribute)
+
+            if name in result:
+                raise Exception(f"attribute {name} already exists")
+
+            result[name] = attribute
+
+        return result
 
     # def extract_title(self, dataset: dict) -> str:
     #     project_data = Utils.check_key(Soilgrids_Constants.project_key, dataset)

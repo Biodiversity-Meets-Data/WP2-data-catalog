@@ -82,3 +82,6 @@ class Extraction(ABC):
 
     def extract_license(self, dataset: dict):
         pass
+
+    def extract_attributes(self, dataset: list) -> dict:
+        pass
