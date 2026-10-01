@@ -57,15 +57,24 @@ class ExtractionEML(Extraction):
         provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
         providers.append(provider)
 
-        # BMD TODO
+        # BMD
+        bmd_provider = super().generate_bmd_provider()
+        providers.append(bmd_provider)
 
-        # LWE catalog TODO
+        # LWE catalog
+        provider = super().generate_lwe_provider()
+        providers.append(provider)
 
         # chiara
+        metadata_roles = [ProviderRole.PROCESSOR]
+        tmp = super().generate_metadata_providers([metadata_provider])
+        providers.extend(tmp)
 
         # SIB
-
-        # raise Exception("unimplemented")
+        provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
+                                         roles=metadata_roles,
+                                         url=Soilgrids_Constants.SIB_URL)
+        providers.append(provider)
 
         return providers
 
@@ -102,17 +111,6 @@ class ExtractionEML(Extraction):
             keywords.append(keyword)
 
         return keywords
-
-    # def extract_description(self, dataset: dict) -> str:
-    #     logger.info("extract description")
-    #     abstract = Utils.check_key(Soilgrids_Constants.abstract_key, dataset)
-    #
-    #     return abstract
-    #
-    # def extract_title(self, dataset: dict) -> str:
-    #     logger.info("extract title")
-    #     Utils.check_key(Soilgrids_Constants)
-    #     raise Exception("unimplemented")
 
     def extract_title_description(self, project: dict) -> list[str]:
         logger.info("extract title and description")

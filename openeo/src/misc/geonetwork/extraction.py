@@ -3,7 +3,7 @@ import requests
 
 from abc import ABC, abstractmethod
 
-from pystac import Provider
+from pystac import Provider, ProviderRole
 
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
@@ -48,40 +48,69 @@ class Extraction(ABC):
     def build_name(self, surname: str, given_name: str):
         return surname + " " + given_name
 
+    def generate_bmd_provider(self):
+        bmd_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
+        bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
+                                             roles=bmd_roles,
+                                             url=Soilgrids_Constants.BMD_DOI)
+
+        return bmd_provider
+
+    def generate_lwe_provider(self):
+        lwe_roles = [ProviderRole.PROCESSOR,
+                     ProviderRole.HOST]
+        provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+                                         roles=lwe_roles,
+                                         url=Soilgrids_Constants.geonetwork_base_url)
+
+        return provider
+
+    def generate_metadata_providers(self, metadata_providers: list):
+        providers = list()
+        metadata_roles = [ProviderRole.PROCESSOR]
+        for metadata_provider in metadata_providers:
+            provider = self.extract_person(metadata_provider, roles=metadata_roles)
+            providers.append(provider)
+
+        return providers
+
     @abstractmethod
     def check_response(self, geonetwork_response) -> dict:
+        """basic check for a specific endpoint"""
         pass
 
     @abstractmethod
     def check_dataset(self, dataset: dict):
+        """basic dataset check for required properties"""
         pass
 
     @abstractmethod
     def extract_providers(self, dataset: dict) -> list[Provider]:
+        """get anybody involved"""
         pass
 
     @abstractmethod
     def extract_person(self, person: dict, roles: list | None = None) -> Provider:
+        """name, surname, etc..."""
         pass
 
     @abstractmethod
     def extract_citation(self, methods: dict) -> str:
+        """often a publication"""
         pass
 
     def extract_keywords(self, dataset: dict) -> list[str]:
+        """specific keywords found in the payload"""
         pass
 
     def extract_title_description(self, project: dict) -> str:
+        """title and description are often found together"""
         pass
-
-    # def extract_title(self, dataset: dict) -> str:
-    #     pass
-    #
-    # def extract_description(self, dataset: dict) -> str:
-    #     pass
 
     def extract_license(self, dataset: dict):
         pass
 
     def extract_attributes(self, dataset: list) -> dict:
+        """what was measured in this dataset"""
         pass

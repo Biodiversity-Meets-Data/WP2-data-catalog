@@ -61,33 +61,21 @@ class ExtractionElasticsearch(Extraction):
                          ProviderRole.LICENSOR,
                          ProviderRole.HOST]
         for contact in contacts:
-            # provider_name = contact[Soilgrids_Constants.organization_name_key]
-            # provider_email = contact[Soilgrids_Constants.electronic_email_address_key]
-            # provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
             provider = self.extract_person(contact, contact_roles)
             providers.append(provider)
 
         # BMD as processor, host
-        bmd_roles = [ProviderRole.PROCESSOR,
-                     ProviderRole.HOST]
-        bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
-                                             roles=bmd_roles,
-                                             url=Soilgrids_Constants.BMD_DOI)
+        bmd_provider = super().generate_bmd_provider()
         providers.append(bmd_provider)
 
         # LWE catalog
-        lwe_roles = [ProviderRole.PROCESSOR,
-                     ProviderRole.HOST]
-        provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
-                                         roles=lwe_roles,
-                                         url=Soilgrids_Constants.geonetwork_base_url)
+        provider = super().generate_lwe_provider()
         providers.append(provider)
 
         # chiara
         metadata_roles = [ProviderRole.PROCESSOR]
-        for metadata_provider in metadata_providers:
-            provider = self.extract_person(metadata_provider, roles=metadata_roles)
-            providers.append(provider)
+        tmp = super().generate_metadata_providers(metadata_providers)
+        providers.extend(tmp)
 
         # SIB
         provider = Utils.create_provider(name=Soilgrids_Constants.SIB_NAME,
@@ -156,18 +144,6 @@ class ExtractionElasticsearch(Extraction):
             result[name] = attribute
 
         return result
-
-    # def extract_title(self, dataset: dict) -> str:
-    #     project_data = Utils.check_key(Soilgrids_Constants.project_key, dataset)
-    #     collection_title = Utils.check_key(Soilgrids_Constants.title_key, project_data)
-    #
-    #     return collection_title
-    #
-    # def extract_description(self, dataset: dict) -> str:
-    #     project_data = Utils.check_key(Soilgrids_Constants.project_key, dataset)
-    #     collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project_data)
-    #
-    #     return collection_description
 
     def extract_title_description(self, project: dict) -> list[str]:
         logger.info("extract title and description")

@@ -348,7 +348,7 @@ To test the query :
 python -m src.test_geonetwork -d "8315df49-bde3-4138-8f71-9b722f3afd06" | jq
 ```
 
-The payload comes from Elasticsearch, see :
+The payload may come from Elasticsearch, see :
 
 - https://docs.geonetwork-opensource.org/4.2/api/search/
 - https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-search
@@ -369,4 +369,12 @@ It still contains some Geonetwork/Elasticsearch metadata. Besides these, some us
 - "methodSteps"
 - "citation"
 
-Use these to replace hard-coded values.
+Use these to replace hard-coded values. 
+
+In case of encoding issues, use another endpoint
+
+```html
+https://metadatacatalogue.lifewatch.eu/srv/api/records/8315df49-bde3-4138-8f71-9b722f3afd06/formatters/json
+```
+
+It seems better than the first endpoint, but the payload is not identical, thus requiring code refactoring.
