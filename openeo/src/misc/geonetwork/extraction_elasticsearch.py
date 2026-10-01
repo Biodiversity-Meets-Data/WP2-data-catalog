@@ -36,8 +36,8 @@ class ExtractionElasticsearch(Extraction):
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
         metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
-        license_url = Utils.check_key(Soilgrids_Constants.license_url_key, dataset)
-        license_name = Utils.check_key(Soilgrids_Constants.license_name_key, dataset)
+        license_url = Utils.check_key(Soilgrids_Constants.url_license_dataset_key, dataset)
+        license_name = Utils.check_key(Soilgrids_Constants.license_name_licensed_dataset_key, dataset)
         intellectual_rights = Utils.check_key(Soilgrids_Constants.intellectual_rights_key, dataset)
         methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
         keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
@@ -126,7 +126,7 @@ class ExtractionElasticsearch(Extraction):
 
         return keywords_kpi
 
-    def extract_attributes(self, dataset: list) -> dict:
+    def extract_attributes(self, dataset: dict) -> dict:
         logger.info("extract attributes")
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
         attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatables[0])
@@ -135,8 +135,6 @@ class ExtractionElasticsearch(Extraction):
 
         for attribute in attributes:
             name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
-            # unit = Utils.check_key(Soilgrids_Constants.attribute_standard_unit_key, attribute)
-            # description = Utils.check_key(Soilgrids_Constants.description_key, attribute)
 
             if name in result:
                 raise Exception(f"attribute {name} already exists")
@@ -152,5 +150,8 @@ class ExtractionElasticsearch(Extraction):
 
         return [collection_title, collection_description]
 
-    def extract_license(self, dataset: dict):
-        raise Exception("not implemented")
+    def extract_license(self, dataset: dict) -> list[str]:
+        license_name = Utils.check_key(Soilgrids_Constants.license_name_licensed_dataset_key, dataset)
+        license_url = Utils.check_key(Soilgrids_Constants.url_license_dataset_key, dataset)
+
+        return [license_name, license_url]

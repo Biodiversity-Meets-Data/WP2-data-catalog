@@ -31,6 +31,7 @@ class ExtractionEML(Extraction):
         metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
         methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
         keyword_set = Utils.check_key(Soilgrids_Constants.keyword_set_key, dataset)
+        licensed = Utils.check_key(Soilgrids_Constants.licensed_key, dataset)
 
     def extract_providers(self, dataset: dict) -> list[Provider]:
         logger.info("extract providers")
@@ -118,3 +119,13 @@ class ExtractionEML(Extraction):
         collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project)[0]
 
         return [collection_title, collection_description]
+
+    def extract_license(self, dataset: dict) -> list[str]:
+        licensed = Utils.check_key(Soilgrids_Constants.licensed_key, dataset)
+        license_name = Utils.check_key(Soilgrids_Constants.license_name_key, licensed)
+        license_url = Utils.check_key(Soilgrids_Constants.url_key, licensed)
+
+        return [license_name, license_url]
+
+    def extract_attributes(self, dataset: dict) -> dict:
+        raise Exception("unimplemented")

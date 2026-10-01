@@ -108,9 +108,9 @@ class Extraction(ABC):
         """title and description are often found together"""
         pass
 
-    def extract_license(self, dataset: dict):
+    def extract_license(self, dataset: dict) -> list[str]:
         pass
 
-    def extract_attributes(self, dataset: list) -> dict:
+    def extract_attributes(self, dataset: dict) -> dict:
         """what was measured in this dataset"""
         pass

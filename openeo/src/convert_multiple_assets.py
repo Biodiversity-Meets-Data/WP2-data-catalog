@@ -33,6 +33,7 @@ class ConvertMultipleAssets(STACInterface):
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
         self.projection = Soilgrids_Constants.DEFAULT_PROJECTION
         self.output_path = arguments.output_path
+        self.query_type = arguments.query_type
 
     def convert(self):
         """
@@ -43,17 +44,15 @@ class ConvertMultipleAssets(STACInterface):
         """
         # TODO: add dates, geometry
         # get geonetwork dataset
-        query_type = Soilgrids_Constants.elastic_value
-
-        if query_type == Soilgrids_Constants.elastic_value:
+        if self.query_type == Soilgrids_Constants.elastic_value:
             extractor = ExtractionElasticsearch()
-        elif query_type == Soilgrids_Constants.eml_value:
+        elif self.query_type == Soilgrids_Constants.eml_value:
             extractor = ExtractionEML()
         else:
-            raise Exception(f"incorrect type {query_type}")
+            raise Exception(f"incorrect type {self.query_type}")
 
         soilgrids_dataset = extractor.query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid,
-                                                    query_type=query_type)
+                                                    query_type=self.query_type)
 
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
@@ -82,7 +81,7 @@ class ConvertMultipleAssets(STACInterface):
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
                 else:
-                    links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=query_type)
+                    links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=self.query_type)
                     item.add_links(links)
                     items.append(item)
 
@@ -94,8 +93,10 @@ class ConvertMultipleAssets(STACInterface):
             keywords = extractor.extract_keywords(dataset=soilgrids_dataset)
             # make it unique with set()
             collection_keywords = list(set(list(("soilgrids", "aggregated", resolution)) + variable_names + keywords))
-            collection_license_name = Utils.check_key(Soilgrids_Constants.license_name_key, soilgrids_dataset)
-            license_url = Utils.check_key(Soilgrids_Constants.license_url_key, soilgrids_dataset)
+            # license name and url
+            license_wrapper = extractor.extract_license(dataset=soilgrids_dataset)
+            collection_license_name = license_wrapper[0]
+            license_url = license_wrapper[1]
             collection_license_link = Utils.create_link(rel="license",
                                                         href=license_url,
                                                         type="text/html",
@@ -125,7 +126,7 @@ class ConvertMultipleAssets(STACInterface):
                                                            extra_fields=extra_fields)
 
             # absolute links
-            links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=query_type)
+            links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=self.query_type)
             soilgrids_collection.add_links(links)
 
             # add bottom to top
