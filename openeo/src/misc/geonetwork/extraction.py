@@ -114,3 +114,16 @@ class Extraction(ABC):
     def extract_attributes(self, dataset: dict) -> dict:
         """what was measured in this dataset"""
         pass
+
+    def parse_attributes(self, attributes: list) -> dict:
+        result = {}
+
+        for attribute in attributes:
+            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
+
+            if name in result:
+                raise Exception(f"attribute {name} already exists")
+
+            result[name] = attribute
+
+        return result

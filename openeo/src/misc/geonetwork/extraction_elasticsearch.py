@@ -131,15 +131,7 @@ class ExtractionElasticsearch(Extraction):
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
         attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatables[0])
         """to be compared with the hardcoded attributes ?"""
-        result = {}
-
-        for attribute in attributes:
-            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
-
-            if name in result:
-                raise Exception(f"attribute {name} already exists")
-
-            result[name] = attribute
+        result = super().parse_attributes(attributes=attributes)
 
         return result
 

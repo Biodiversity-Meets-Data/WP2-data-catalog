@@ -97,8 +97,8 @@ class ExtractionEML(Extraction):
 
     def extract_citation(self, methods: dict) -> str:
         logger.info("extract citations")
-        steps = Utils.check_key(key=Soilgrids_Constants.keyword_set_key, wrapper=methods)
-        citation = Utils.check_key(key=Soilgrids_Constants.citation_key, wrapper=steps)
+        method_step = Utils.check_key(key=Soilgrids_Constants.method_step_key, wrapper=methods)
+        citation = Utils.check_key(key=Soilgrids_Constants.citation_key, wrapper=method_step)[0]
 
         return citation
 
@@ -128,4 +128,9 @@ class ExtractionEML(Extraction):
         return [license_name, license_url]
 
     def extract_attributes(self, dataset: dict) -> dict:
-        raise Exception("unimplemented")
+        logger.info("extract attributes")
+        datatable = Utils.check_key(Soilgrids_Constants.datatable_key, dataset)
+        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatable)
+        result = super().parse_attributes(attributes=attributes)
+
+        return result

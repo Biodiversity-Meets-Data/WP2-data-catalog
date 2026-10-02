@@ -219,6 +219,6 @@ class Utils:
     @staticmethod
     def check_key(key, wrapper: dict):
         if key not in wrapper:
-            raise Exception("missing key in object")
+            raise Exception(f"missing key {key} in object")
 
         return wrapper[key]
