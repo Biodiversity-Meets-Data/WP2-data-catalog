@@ -64,7 +64,11 @@ class Constants:
     timeout = 30
     elastic_value = "elastic"
     eml_value = "eml"
-    DEFAULT_PROJECTION = "EPSG:4326"
+    HOMOLOSINE_PROJ4 = "+proj=igh +lat_0=0 +lon_0=0 +datum=WGS84 +units=m +no_defs"
+    # see https://github.com/stac-extensions/projection
+    HOMOLOSINE_CODE = "ESRI:54052"
+    DEFAULT_PROJECTION_NUMBER = 4326
+    DEFAULT_PROJECTION = f"EPSG:{DEFAULT_PROJECTION_NUMBER}"
     BDOD_VALUE = "bdod"
     CEC_VALUE = "cec"
     CFVO_VALUE = "cfvo"

@@ -68,6 +68,16 @@ class ConvertMultipleAssets(STACInterface):
             items = list()
             # collection id
             collection_id = Soilgrids_Utils.create_collection_id(resolution)
+            # citations
+            methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
+            first_citation = extractor.extract_citation(methods=methods)
+            doi = extractor.extract_doi(citation=first_citation)
+            # extra fields
+            extra_fields = {
+                "sci:citation": first_citation,
+                "sci:doi": doi,
+                "proj:code": Soilgrids_Constants.HOMOLOSINE_CODE
+            }
 
             for variable_name in variable_names:
                 entries = ConvertMultipleAssets.generate_entries(resolution=resolution, variable_names=[variable_name])
@@ -76,7 +86,8 @@ class ConvertMultipleAssets(STACInterface):
                                                      item_id=item_id,
                                                      entries=entries,
                                                      projection=self.projection,
-                                                     attributes=attributes)
+                                                     attributes=attributes,
+                                                     extra_fields=extra_fields)
 
                 if item is None:
                     logger.warning(f"no item for {variable_name}")
@@ -108,13 +119,6 @@ class ConvertMultipleAssets(STACInterface):
             tmp = extractor.extract_title_description(project=project)
             collection_title = tmp[0]
             collection_description = tmp[1]
-            # citations
-            methods = Utils.check_key(Soilgrids_Constants.methods_key, soilgrids_dataset)
-            first_citation = extractor.extract_citation(methods=methods)
-            # extra fields
-            extra_fields = {
-                "sci:citation": first_citation
-            }
 
             soilgrids_collection = Utils.create_collection(collection_id=collection_id,
                                                            title=collection_title,
@@ -139,7 +143,7 @@ class ConvertMultipleAssets(STACInterface):
         top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
 
     def create_item_from_rasters(self, variable_name: str, item_id: str, entries: list, projection: str,
-                                 attributes: dict):
+                                 attributes: dict, extra_fields: dict):
         """
         - reads multiple urls (if they exist), each associated with a variable
         - create a single Item
@@ -154,12 +158,14 @@ class ConvertMultipleAssets(STACInterface):
             logger.warning(f"nothing to be done for {item_id}")
             return None
         else:
-            properties = {
-                "soilgrids:variable": variable_name
-            }
-            item = Utils.create_simple_item(item_id=item_id, datetime=self.date_time, start_datetime=self.start_datetime,
-                                            end_datetime=self.end_datetime, bbox=bbox, geometry=geometry,
-                                            properties=properties)
+            extra_fields["soilgrids:variable"] = variable_name
+            item = Utils.create_simple_item(item_id=item_id,
+                                            datetime=self.date_time,
+                                            start_datetime=self.start_datetime,
+                                            end_datetime=self.end_datetime,
+                                            bbox=bbox,
+                                            geometry=geometry,
+                                            properties=extra_fields)
 
             # assets must be added to item first
             for entry in entries:
@@ -237,9 +243,11 @@ class ConvertMultipleAssets(STACInterface):
             logger.info(f"extracting from {url}")
             try:
                 with rasterio.open(url) as src:
-                    left, bottom, right, top = rasterio.warp.transform_bounds(src.crs, projection, *src.bounds)
+                    src_crs = src.crs
+                    left, bottom, right, top = rasterio.warp.transform_bounds(src_crs, projection, *src.bounds)
                     geom = box(left, bottom, right, top)
                     geometries.append(geom)
+                    # required otherwise most queries will fail due to rate limitation
                     time.sleep(2)
             except RasterioIOError:
                 logger.error(f"CANNOT OPEN {url}")

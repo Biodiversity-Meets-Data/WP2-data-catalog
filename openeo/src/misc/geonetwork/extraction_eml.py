@@ -1,4 +1,5 @@
 import logging
+import re
 
 from pystac import Provider, ProviderRole
 
@@ -101,6 +102,17 @@ class ExtractionEML(Extraction):
         citation = Utils.check_key(key=Soilgrids_Constants.citation_key, wrapper=method_step)[0]
 
         return citation
+
+    def extract_doi(self, citation: str) -> str:
+        logger.info("extract doi")
+        doi = None
+        """use regexp"""
+        m = re.search(r"10\.\d{4,9}/\S+", citation)
+
+        if m:
+            doi = m.group(0).rstrip(".")
+
+        return doi
 
     def extract_keywords(self, dataset: dict) -> list[str]:
         logger.info("extract keywords")

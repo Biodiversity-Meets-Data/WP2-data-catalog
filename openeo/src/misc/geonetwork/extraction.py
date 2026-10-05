@@ -100,6 +100,10 @@ class Extraction(ABC):
         """often a publication"""
         pass
 
+    def extract_doi(self, citation) -> str:
+        """should be in the citation"""
+        pass
+
     def extract_keywords(self, dataset: dict) -> list[str]:
         """specific keywords found in the payload"""
         pass

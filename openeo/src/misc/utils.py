@@ -44,6 +44,7 @@ class Utils:
                                 providers=providers,
                                 stac_extensions=[
                                     "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
+                                    "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
                                 ],
                                 extra_fields=extra_fields)
 
@@ -54,6 +55,7 @@ class Utils:
         """
         packs metadata into a STAC Item
         @todo add more properties (variable name, date, geometry, url), needed by cubing engine
+        @deprecated this is deprecated
         """
         logger.info(f"creating item {item_id}")
         item = Item(
@@ -71,7 +73,7 @@ class Utils:
             },
             stac_extensions=[
                 "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-                "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+                "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
                 "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
             ]
         )
@@ -81,8 +83,13 @@ class Utils:
     @staticmethod
     def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties) -> Item:
         logger.info(f"creating simple item {item_id}")
-        item = Item(id=item_id, bbox=bbox, datetime=datetime, start_datetime=start_datetime,
-                    end_datetime=end_datetime, geometry=geometry, properties=properties)
+        item = Item(id=item_id,
+                    bbox=bbox,
+                    datetime=datetime,
+                    start_datetime=start_datetime,
+                    end_datetime=end_datetime,
+                    geometry=geometry,
+                    properties=properties)
 
         return item
 
