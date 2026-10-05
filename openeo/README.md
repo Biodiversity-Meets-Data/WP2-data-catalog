@@ -322,6 +322,14 @@ curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: applic
 }
 ```
 
+### Update an existing item
+
+Issue a PATCH request:
+
+```bash
+curl -X PATH <SERVER>/collections/<collection_id>/items/<item_id> -H 'Content-Type: application/json' -d '<json>'
+```
+
 ### Delete an object at collection level
 
 ```bash
