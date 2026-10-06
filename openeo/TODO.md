@@ -18,5 +18,5 @@ item:
 ## 28.09.2026
 
 - coordinate reference system -> mine it from a tiff file
-- ~~add units~~
+- ~~add units~
 - add info when resource is missing
