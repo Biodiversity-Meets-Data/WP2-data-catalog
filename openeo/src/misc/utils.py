@@ -43,8 +43,8 @@ class Utils:
                                 keywords=keywords,
                                 providers=providers,
                                 stac_extensions=[
-                                    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json"
-                                    "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+                                    "https://stac-extensions.github.io/scientific/v1.0.0/schema.json",
+                                    "https://stac-extensions.github.io/projection/v2.0.0/schema.json"
                                 ],
                                 extra_fields=extra_fields)
 
@@ -89,7 +89,14 @@ class Utils:
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
                     geometry=geometry,
-                    properties=properties)
+                    properties=properties,
+                    stac_extensions=[
+                        "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+                        "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
+                        "https://stac-extensions.github.io/raster/v1.1.0/schema.json",
+                        "https://stac-extensions.github.io/scientific/v1.0.0/schema.json",
+
+                    ])
 
         return item
 
