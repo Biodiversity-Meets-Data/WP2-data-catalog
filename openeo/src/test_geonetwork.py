@@ -4,7 +4,8 @@ import logging
 import requests
 import json
 
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.constants import Constants
+from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.geonetwork.extraction_elasticsearch import Extraction
 
@@ -26,7 +27,7 @@ query_url = Soilgrids_Utils.build_catalog_url(uuid=args.uuid, query_type=Soilgri
 logger.info(f"query url: {query_url}")
 
 # Send a put request to the endpoint
-response = requests.get(query_url, timeout=Soilgrids_Constants.timeout)
+response = requests.get(query_url, timeout=Constants.NETWORK_TIMEOUT)
 
 try:
     query_value = Soilgrids_Constants.elastic_value

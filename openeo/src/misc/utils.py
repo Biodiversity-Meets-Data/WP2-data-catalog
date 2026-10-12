@@ -10,7 +10,7 @@ import shapely
 from pystac.extensions.raster import RasterBand
 from shapely.geometry import Polygon, mapping, shape
 import rasterio
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 

@@ -315,7 +315,7 @@ curl -X POST <SERVER>/collections/<collection_id>/items -H 'Content-Type: applic
 Issue a PATCH request:
 
 ```bash
-curl -X PATH <SERVER>/collections/<collection_id>/items/<item_id> -H 'Content-Type: application/json' -d '<json>'
+curl -X PATCH <SERVER>/collections/<collection_id>/items/<item_id> -H 'Content-Type: application/json' -d '<json>'
 ```
 
 ### Delete an object at collection level

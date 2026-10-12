@@ -6,7 +6,9 @@ from abc import ABC, abstractmethod
 from pystac import Provider, ProviderRole
 
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
+from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
+from src.misc.constants import Constants
 from src.misc.utils import Utils
 
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class Extraction(ABC):
         headers = {
             "Accept": "application/json"
         }
-        response = requests.get(query_url, headers=headers, timeout=Soilgrids_Constants.timeout)
+        response = requests.get(query_url, headers=headers, timeout=Constants.NETWORK_TIMEOUT)
         dataset = self.check_response(response)
 
         return dataset
@@ -51,18 +53,18 @@ class Extraction(ABC):
     def generate_bmd_provider(self):
         bmd_roles = [ProviderRole.PROCESSOR,
                      ProviderRole.HOST]
-        bmd_provider = Utils.create_provider(name=Soilgrids_Constants.BMD_PROJECT,
+        bmd_provider = Utils.create_provider(name=Constants.BMD_PROJECT,
                                              roles=bmd_roles,
-                                             url=Soilgrids_Constants.BMD_DOI)
+                                             url=Constants.BMD_DOI)
 
         return bmd_provider
 
     def generate_lwe_provider(self):
         lwe_roles = [ProviderRole.PROCESSOR,
                      ProviderRole.HOST]
-        provider = Utils.create_provider(name=Soilgrids_Constants.geonetwork_name,
+        provider = Utils.create_provider(name=Geonetwork_Constants.geonetwork_name,
                                          roles=lwe_roles,
-                                         url=Soilgrids_Constants.geonetwork_base_url)
+                                         url=Geonetwork_Constants.geonetwork_base_url)
 
         return provider
 

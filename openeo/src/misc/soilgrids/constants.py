@@ -1,4 +1,4 @@
-class Constants:
+class Soilgrids_Constants:
     """constants used throughout the code"""
     asset_key = "image"
     src_key = "src"
@@ -49,19 +49,9 @@ class Constants:
     user_id_key = "userId"
     max_nbr_tokens = 4
     token_separator = "_"
-    TIF_EXTENSION = "tif"
     isric_base_url = "https://isric.org/"
     soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
-    geonetwork_base_url = "https://metadatacatalogue.lifewatch.eu"
-    # this returns an elasticsearch payload, with encoding issues
-    geonetwork_query_path_old = "/srv/api/records?uuid="
-    # this is better for encoding
-    geonetwork_query_path = "/srv/api/records/"
-    # formatting
-    geonetwork_query_path_format = "/formatters/json"
-    geonetwork_name = "LifeWatch ERIC Metadata Catalogue"
     soilgrids_dataset_uuid = "8315df49-bde3-4138-8f71-9b722f3afd06"
-    timeout = 30
     elastic_value = "elastic"
     eml_value = "eml"
     HOMOLOSINE_PROJ4 = "+proj=igh +lat_0=0 +lon_0=0 +datum=WGS84 +units=m +no_defs"
@@ -89,7 +79,3 @@ class Constants:
     RESOLUTION_1000 = "1000"
     RESOLUTION_5000 = "5000"
     RESOLUTIONS = [RESOLUTION_1000, RESOLUTION_5000]
-    BMD_PROJECT = "Biodiversity Meets Data (BMD) Project"
-    BMD_DOI = "https://doi.org/10.3030/101181294"
-    SIB_NAME = "Swiss Institute of Bioinformatics"
-    SIB_URL = "https://www.sib.swiss"

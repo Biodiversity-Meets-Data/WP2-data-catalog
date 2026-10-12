@@ -2,7 +2,9 @@ import logging
 import rasterio.warp
 from pystac import RelType, Link, MediaType
 from shapely.geometry import Polygon, mapping
-from src.misc.soilgrids.constants import Constants
+from src.misc.soilgrids.constants import Soilgrids_Constants
+from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
+from src.misc.constants import Constants
 
 logger = logging.getLogger(__name__)
 
@@ -12,10 +14,10 @@ class Utils:
     @staticmethod
     def extract_band_from_name(file_name: str, known_bands: list):
         """some file name management to extract band name"""
-        tokens = file_name.split(Constants.token_separator)
+        tokens = file_name.split(Soilgrids_Constants.token_separator)
         nbr_tokens = len(tokens)
 
-        if nbr_tokens != Constants.max_nbr_tokens:
+        if nbr_tokens != Soilgrids_Constants.max_nbr_tokens:
             raise Exception(f"incorrect number of tokens: {nbr_tokens}")
 
         band = tokens[1]
@@ -27,11 +29,11 @@ class Utils:
 
     @staticmethod
     def generate_file_name(variable_name: str, band_name: str, resolution: str):
-        return Constants.token_separator.join([variable_name, band_name, "mean", resolution])
+        return Soilgrids_Constants.token_separator.join([variable_name, band_name, "mean", resolution])
 
     @staticmethod
     def generate_file_names():
-        file_names = Utils.generate_file_names_for(Constants.VARIABLE_NAMES, Constants.band_names, Constants.RESOLUTIONS)
+        file_names = Utils.generate_file_names_for(Soilgrids_Constants.VARIABLE_NAMES, Soilgrids_Constants.band_names, Soilgrids_Constants.RESOLUTIONS)
 
         return file_names
 
@@ -64,7 +66,7 @@ class Utils:
     def generate_url(variable_name: str, band_name: str, resolution: str):
         """builds an url based on available elements"""
         filename = Utils.generate_file_name(variable_name=variable_name, resolution=resolution, band_name=band_name)
-        url = f"{Constants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
+        url = f"{Soilgrids_Constants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
 
         return url
 
@@ -87,10 +89,10 @@ class Utils:
     @staticmethod
     def build_catalog_url(uuid: str, query_type: str):
         """builds url for soilgrids dataset"""
-        if query_type == Constants.elastic_value:
-            return Constants.geonetwork_base_url + Constants.geonetwork_query_path_old + uuid
-        elif query_type == Constants.eml_value:
-            return Constants.geonetwork_base_url + Constants.geonetwork_query_path + uuid + Constants.geonetwork_query_path_format
+        if query_type == Soilgrids_Constants.elastic_value:
+            return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path_old + uuid
+        elif query_type == Soilgrids_Constants.eml_value:
+            return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path + uuid + Geonetwork_Constants.geonetwork_query_path_format
         else:
             raise Exception(f"unknown action {query_type}")
 
@@ -100,15 +102,15 @@ class Utils:
         logger.info("extract links")
         links = list()
         # isric
-        url = Constants.isric_base_url
+        url = Soilgrids_Constants.isric_base_url
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # soilgrids
-        url = Constants.soilgrids_base_url
+        url = Soilgrids_Constants.soilgrids_base_url
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # catalog
-        url = Utils.build_catalog_url(uuid=Constants.soilgrids_dataset_uuid, query_type=action)
+        url = Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=action)
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
 

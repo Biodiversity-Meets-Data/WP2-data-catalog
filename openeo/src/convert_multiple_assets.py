@@ -13,7 +13,7 @@ from pystac.extensions.raster import RasterExtension
 from rasterio import RasterioIOError
 from shapely.geometry import box, mapping
 from shapely.ops import unary_union
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
 from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
