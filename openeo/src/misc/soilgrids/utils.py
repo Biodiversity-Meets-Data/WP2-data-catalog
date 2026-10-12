@@ -3,8 +3,9 @@ import rasterio.warp
 from pystac import RelType, Link, MediaType
 from shapely.geometry import Polygon, mapping
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
-from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
+from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
 from src.misc.constants import Constants
+from src.misc.query_types import QueryTypes
 
 logger = logging.getLogger(__name__)
 
@@ -87,17 +88,7 @@ class Utils:
         return proj_bounds, bbox, polygon
 
     @staticmethod
-    def build_catalog_url(uuid: str, query_type: str):
-        """builds url for soilgrids dataset"""
-        if query_type == Geonetwork_Constants.elastic_value:
-            return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path_old + uuid
-        elif query_type == Geonetwork_Constants.eml_value:
-            return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path + uuid + Geonetwork_Constants.geonetwork_query_path_format
-        else:
-            raise Exception(f"unknown action {query_type}")
-
-    @staticmethod
-    def create_links(rel_type: RelType, action: str) -> list[Link]:
+    def create_links(rel_type: RelType, action: QueryTypes) -> list[Link]:
         """absolute links, unlike internal relative links"""
         logger.info("extract links")
         links = list()
@@ -110,7 +101,7 @@ class Utils:
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # catalog
-        url = Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=action)
+        url = Geonetwork_Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=action)
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
 

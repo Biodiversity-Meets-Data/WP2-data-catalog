@@ -5,11 +5,12 @@ from abc import ABC, abstractmethod
 
 from pystac import Provider, ProviderRole
 
-from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
+from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
 from src.misc.constants import Constants
 from src.misc.utils import Utils
+from src.misc.query_types import QueryTypes
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +31,12 @@ class Extraction(ABC):
 
         return json
 
-    def query_dataset(self, uuid: str, query_type: str) -> dict:
+    def query_dataset(self, uuid: str, query_type: QueryTypes) -> dict:
         """entry point, main query"""
         logger.info(f"query dataset {uuid}")
 
         # Set up your server and the query URL:
-        query_url = Soilgrids_Utils.build_catalog_url(uuid=uuid, query_type=query_type)
+        query_url = Geonetwork_Utils.build_catalog_url(uuid=uuid, query_type=query_type)
         logger.info(f"query url: {query_url}")
 
         # Send a get request to the endpoint
@@ -48,9 +49,11 @@ class Extraction(ABC):
         return dataset
 
     def build_name(self, surname: str, given_name: str):
+        """to build a person's name"""
         return surname + " " + given_name
 
     def generate_bmd_provider(self):
+        """helper method to create a BMD provider"""
         bmd_roles = [ProviderRole.PROCESSOR,
                      ProviderRole.HOST]
         bmd_provider = Utils.create_provider(name=Constants.BMD_PROJECT,
@@ -60,6 +63,7 @@ class Extraction(ABC):
         return bmd_provider
 
     def generate_lwe_provider(self):
+        """helper method to create a lifewatch eric provider"""
         lwe_roles = [ProviderRole.PROCESSOR,
                      ProviderRole.HOST]
         provider = Utils.create_provider(name=Geonetwork_Constants.geonetwork_name,
@@ -69,6 +73,7 @@ class Extraction(ABC):
         return provider
 
     def generate_metadata_providers(self, metadata_providers: list):
+        """helper method to enrich a list of metadata providers with predefined roles"""
         providers = list()
         metadata_roles = [ProviderRole.PROCESSOR]
         for metadata_provider in metadata_providers:
