@@ -2,7 +2,7 @@ import logging
 import rasterio.warp
 from pystac import RelType, Link, MediaType
 from shapely.geometry import Polygon, mapping
-from src.misc.soilgrids.constants import Soilgrids_Constants
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
 from src.misc.constants import Constants
 

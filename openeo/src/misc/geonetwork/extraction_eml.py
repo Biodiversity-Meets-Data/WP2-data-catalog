@@ -6,7 +6,7 @@ from pystac import Provider, ProviderRole
 from src.misc.utils import Utils
 from src.misc.constants import Constants
 from src.misc.geonetwork.extraction import Extraction
-from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 

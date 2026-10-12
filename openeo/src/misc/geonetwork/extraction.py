@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from pystac import Provider, ProviderRole
 
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
-from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
 from src.misc.constants import Constants
 from src.misc.utils import Utils

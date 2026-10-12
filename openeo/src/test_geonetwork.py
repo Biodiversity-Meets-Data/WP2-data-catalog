@@ -5,7 +5,7 @@ import requests
 import json
 
 from src.misc.constants import Constants
-from src.misc.soilgrids.constants import Soilgrids_Constants as Soilgrids_Constants
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.geonetwork.extraction_elasticsearch import Extraction
 
