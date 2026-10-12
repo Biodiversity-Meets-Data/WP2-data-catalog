@@ -60,21 +60,9 @@ Use
 - data: 
   - https://data.isric.org/geonetwork/srv/eng/catalog.search#/metadata/b5ca4bb7-7846-48d9-9af9-a0a4a0b94f23
   - https://files.isric.org/soilgrids/latest/data_aggregated/5000m/bdod/
-
+ 
 ```bash
-python -m src.test_basic \ 
-  -c "Soilgrids_collection" \ 
-  -d "1905-04-01" \ 
-  -s "1905-04-01" \ 
-  -e "2016-07-05" \ 
-  -p "EPSG:4326" \ 
-  -t "SoilGrids250m 2.0 - Bulk density aggregated 5000m" \ 
-  -i "data/input/soilgrids/highres/bdod" \ 
-  -o "data/output/soilgrids/test_catalog/"
-```
-  
-```bash
-# simpler version for multiple assets per item
+# version for multiple assets per item
 python -m src.test_multiple_assets \ 
   -d "1905-04-01" \ 
   -s "1905-04-01" \ 
