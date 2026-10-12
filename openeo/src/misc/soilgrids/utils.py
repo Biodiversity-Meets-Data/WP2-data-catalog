@@ -89,9 +89,9 @@ class Utils:
     @staticmethod
     def build_catalog_url(uuid: str, query_type: str):
         """builds url for soilgrids dataset"""
-        if query_type == Soilgrids_Constants.elastic_value:
+        if query_type == Geonetwork_Constants.elastic_value:
             return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path_old + uuid
-        elif query_type == Soilgrids_Constants.eml_value:
+        elif query_type == Geonetwork_Constants.eml_value:
             return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path + uuid + Geonetwork_Constants.geonetwork_query_path_format
         else:
             raise Exception(f"unknown action {query_type}")

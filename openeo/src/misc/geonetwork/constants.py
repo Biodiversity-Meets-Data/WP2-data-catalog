@@ -7,3 +7,5 @@ class Constants:
     # formatting
     geonetwork_query_path_format = "/formatters/json"
     geonetwork_name = "LifeWatch ERIC Metadata Catalogue"
+    elastic_value = "elastic"
+    eml_value = "eml"

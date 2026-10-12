@@ -16,6 +16,8 @@ from shapely.ops import unary_union
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
 from src.misc.utils import Utils
+from src.misc.constants import Constants
+from src.misc.geonetwork.constants import Geonetwork_Constants
 from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
 from src.misc.geonetwork.extraction_eml import ExtractionEML
 from src.stac_interface import STACInterface
@@ -31,7 +33,7 @@ class ConvertMultipleAssets(STACInterface):
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
-        self.projection = Soilgrids_Constants.DEFAULT_PROJECTION
+        self.projection = Constants.DEFAULT_PROJECTION
         self.output_path = arguments.output_path
         self.query_type = arguments.query_type
 
@@ -44,9 +46,9 @@ class ConvertMultipleAssets(STACInterface):
         """
         # TODO: add dates, geometry
         # get geonetwork dataset
-        if self.query_type == Soilgrids_Constants.elastic_value:
+        if self.query_type == Geonetwork_Constants.elastic_value:
             extractor = ExtractionElasticsearch()
-        elif self.query_type == Soilgrids_Constants.eml_value:
+        elif self.query_type == Geonetwork_Constants.eml_value:
             extractor = ExtractionEML()
         else:
             raise Exception(f"incorrect type {self.query_type}")
@@ -76,7 +78,7 @@ class ConvertMultipleAssets(STACInterface):
             extra_fields = {
                 "sci:citation": first_citation,
                 "sci:doi": doi,
-                "proj:code": Soilgrids_Constants.HOMOLOSINE_CODE
+                "proj:code": Constants.HOMOLOSINE_CODE
             }
 
             for variable_name in variable_names:

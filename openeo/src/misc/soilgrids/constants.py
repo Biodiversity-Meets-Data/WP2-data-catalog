@@ -52,13 +52,6 @@ class Constants:
     isric_base_url = "https://isric.org/"
     soilgrids_base_url = "https://files.isric.org/soilgrids/latest/data_aggregated"
     soilgrids_dataset_uuid = "8315df49-bde3-4138-8f71-9b722f3afd06"
-    elastic_value = "elastic"
-    eml_value = "eml"
-    HOMOLOSINE_PROJ4 = "+proj=igh +lat_0=0 +lon_0=0 +datum=WGS84 +units=m +no_defs"
-    # see https://github.com/stac-extensions/projection
-    HOMOLOSINE_CODE = "ESRI:54052"
-    DEFAULT_PROJECTION_NUMBER = 4326
-    DEFAULT_PROJECTION = f"EPSG:{DEFAULT_PROJECTION_NUMBER}"
     BDOD_VALUE = "bdod"
     CEC_VALUE = "cec"
     CFVO_VALUE = "cfvo"
