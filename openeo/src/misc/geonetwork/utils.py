@@ -12,11 +12,10 @@ class Utils:
         """get specific instance based on argument"""
         logging.info(f"get extraction instance for {query_type}")
         # lazy import here to prevent circular import
-        from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
         from src.misc.geonetwork.extraction_eml import ExtractionEML
 
         if query_type == QueryTypes.ELASTIC:
-            return ExtractionElasticsearch()
+            raise Exception(f"support removed")
         elif query_type == QueryTypes.EML:
             return ExtractionEML()
         else:
@@ -26,7 +25,7 @@ class Utils:
     def build_catalog_url(uuid: str, query_type: QueryTypes):
         """builds url for geonetwork dataset, determined by its uuid"""
         if query_type == QueryTypes.ELASTIC:
-            return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path_old + uuid
+            raise Exception(f"support removed")
         elif query_type == QueryTypes.EML:
             return Geonetwork_Constants.geonetwork_base_url + Geonetwork_Constants.geonetwork_query_path + uuid + Geonetwork_Constants.geonetwork_query_path_format
         else:

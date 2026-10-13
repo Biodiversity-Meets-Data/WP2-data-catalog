@@ -10,6 +10,7 @@ from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
 from src.misc.utils import Utils
 from src.misc.constants import Constants
 from src.stac_interface import STACInterface
+from src.misc.query_types import QueryTypes
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class ConvertMultipleAssets(STACInterface):
         self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
         self.projection = Constants.DEFAULT_PROJECTION
         self.output_path = arguments.output_path
-        self.query_type = arguments.query_type
+        self.query_type = QueryTypes.EML
 
     def convert(self):
         """

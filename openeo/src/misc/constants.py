@@ -38,3 +38,4 @@ class Constants:
     url_key = "url"
     datatable_key = "dataTable"
     attribute_list_key = "attributeList"
+    attribute_name_key = "attributeName"

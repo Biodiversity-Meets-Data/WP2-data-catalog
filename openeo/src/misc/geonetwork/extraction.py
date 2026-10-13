@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 
 from pystac import Provider, ProviderRole
 
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.constants import Constants as Geonetwork_Constants
 from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
 from src.misc.constants import Constants
@@ -130,7 +129,7 @@ class Extraction(ABC):
         result = {}
 
         for attribute in attributes:
-            name = Utils.check_key(Soilgrids_Constants.attribute_name_key, attribute)
+            name = Utils.check_key(Constants.attribute_name_key, attribute)
 
             if name in result:
                 raise Exception(f"attribute {name} already exists")
