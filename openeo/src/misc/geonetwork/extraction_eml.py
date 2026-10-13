@@ -6,7 +6,6 @@ from pystac import Provider, ProviderRole
 from src.misc.utils import Utils
 from src.misc.constants import Constants
 from src.misc.geonetwork.extraction import Extraction
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +16,7 @@ class ExtractionEML(Extraction):
         logger.info("parse geonetwork response")
 
         json = super().check_http_response(geonetwork_response=geonetwork_response)
-        result = Utils.check_key(Soilgrids_Constants.dataset_key, json)
+        result = Utils.check_key(Constants.dataset_key, json)
         self.check_dataset(result)
 
         return result
@@ -25,25 +24,25 @@ class ExtractionEML(Extraction):
     def check_dataset(self, dataset: dict):
         """check for presence of important keys"""
         logger.info("check dataset content (eml format)")
-        project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+        project = Utils.check_key(Constants.project_key, dataset)
         # singular in dataset
-        creators = Utils.check_key(Soilgrids_Constants.creator_key, dataset)
+        creators = Utils.check_key(Constants.creator_key, dataset)
         # singular in dataset
-        contacts = Utils.check_key(Soilgrids_Constants.contact_key, dataset)
-        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
-        methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
-        keyword_set = Utils.check_key(Soilgrids_Constants.keyword_set_key, dataset)
-        licensed = Utils.check_key(Soilgrids_Constants.licensed_key, dataset)
+        contacts = Utils.check_key(Constants.contact_key, dataset)
+        metadata_provider = Utils.check_key(Constants.metadata_provider_key, dataset)
+        methods = Utils.check_key(Constants.methods_key, dataset)
+        keyword_set = Utils.check_key(Constants.keyword_set_key, dataset)
+        licensed = Utils.check_key(Constants.licensed_key, dataset)
 
     def extract_providers(self, dataset: dict) -> list[Provider]:
         logger.info("extract providers")
         providers = list()
         # multiple entries
-        creators = Utils.check_key(Soilgrids_Constants.creator_key, dataset)
+        creators = Utils.check_key(Constants.creator_key, dataset)
         # single entry
-        contact = Utils.check_key(Soilgrids_Constants.contact_key, dataset)
+        contact = Utils.check_key(Constants.contact_key, dataset)
         # single entry
-        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        metadata_provider = Utils.check_key(Constants.metadata_provider_key, dataset)
 
         # creators
         creator_roles = [ProviderRole.PRODUCER]
@@ -51,12 +50,12 @@ class ExtractionEML(Extraction):
             provider = self.extract_person(creator, creator_roles)
             providers.append(provider)
 
-        # soilgrids
+        # contacts
         contact_roles = [ProviderRole.PRODUCER,
                          ProviderRole.LICENSOR,
                          ProviderRole.HOST]
-        provider_name = contact[Soilgrids_Constants.organization_name_key]
-        provider_email = contact[Soilgrids_Constants.electronic_email_address_key]
+        provider_name = contact[Constants.organization_name_key]
+        provider_email = contact[Constants.electronic_email_address_key]
         provider = Utils.create_provider(name=provider_name, roles=contact_roles, email=provider_email)
         providers.append(provider)
 
@@ -84,12 +83,12 @@ class ExtractionEML(Extraction):
     def extract_person(self, person: dict, roles: list | None = None) -> Provider:
         """helper method"""
         logger.info("extract from person")
-        name = Utils.check_key(Soilgrids_Constants.individual_name_key, person)
-        provider_givenname = Utils.check_key(Soilgrids_Constants.given_name_key, name)
-        provider_surname = Utils.check_key(Soilgrids_Constants.surname_key, name)
+        name = Utils.check_key(Constants.individual_name_key, person)
+        provider_givenname = Utils.check_key(Constants.given_name_key, name)
+        provider_surname = Utils.check_key(Constants.surname_key, name)
         provider_name = super().build_name(provider_surname, provider_givenname)
-        provider_email = Utils.check_key(Soilgrids_Constants.electronic_email_address_key, person)
-        provider_url = Utils.check_key(Soilgrids_Constants.user_id_key, person)
+        provider_email = Utils.check_key(Constants.electronic_email_address_key, person)
+        provider_url = Utils.check_key(Constants.user_id_key, person)
         provider = Utils.create_provider(name=provider_name,
                                          roles=roles,
                                          email=provider_email,
@@ -99,8 +98,8 @@ class ExtractionEML(Extraction):
 
     def extract_citation(self, methods: dict) -> str:
         logger.info("extract citations")
-        method_step = Utils.check_key(key=Soilgrids_Constants.method_step_key, wrapper=methods)
-        citation = Utils.check_key(key=Soilgrids_Constants.citation_key, wrapper=method_step)[0]
+        method_step = Utils.check_key(key=Constants.method_step_key, wrapper=methods)
+        citation = Utils.check_key(key=Constants.citation_key, wrapper=method_step)[0]
 
         return citation
 
@@ -118,32 +117,32 @@ class ExtractionEML(Extraction):
     def extract_keywords(self, dataset: dict) -> list[str]:
         logger.info("extract keywords")
         keywords = list()
-        keyword_set = Utils.check_key(key=Soilgrids_Constants.keyword_set_key, wrapper=dataset)
+        keyword_set = Utils.check_key(key=Constants.keyword_set_key, wrapper=dataset)
 
         for wrapper in keyword_set:
-            keyword = Utils.check_key(key=Soilgrids_Constants.keyword_key, wrapper=wrapper)
+            keyword = Utils.check_key(key=Constants.keyword_key, wrapper=wrapper)
             keywords.append(keyword)
 
         return keywords
 
     def extract_title_description(self, project: dict) -> list[str]:
         logger.info("extract title and description")
-        collection_title = Utils.check_key(Soilgrids_Constants.title_key, project)
-        collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project)[0]
+        collection_title = Utils.check_key(Constants.title_key, project)
+        collection_description = Utils.check_key(Constants.abstract_key, project)[0]
 
         return [collection_title, collection_description]
 
     def extract_license(self, dataset: dict) -> list[str]:
-        licensed = Utils.check_key(Soilgrids_Constants.licensed_key, dataset)
-        license_name = Utils.check_key(Soilgrids_Constants.license_name_key, licensed)
-        license_url = Utils.check_key(Soilgrids_Constants.url_key, licensed)
+        licensed = Utils.check_key(Constants.licensed_key, dataset)
+        license_name = Utils.check_key(Constants.license_name_key, licensed)
+        license_url = Utils.check_key(Constants.url_key, licensed)
 
         return [license_name, license_url]
 
     def extract_attributes(self, dataset: dict) -> dict:
         logger.info("extract attributes")
-        datatable = Utils.check_key(Soilgrids_Constants.datatable_key, dataset)
-        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatable)
+        datatable = Utils.check_key(Constants.datatable_key, dataset)
+        attributes = Utils.check_key(Constants.attribute_list_key, datatable)
         result = super().parse_attributes(attributes=attributes)
 
         return result

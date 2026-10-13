@@ -4,13 +4,14 @@ import logging
 from typing import Any
 
 import pystac
-from pystac import Extent, Provider, ProviderRole, Link, Asset, Item, Collection, Catalog
+from pystac import Extent, Provider, ProviderRole, Link, Asset, Item, Collection, Catalog, MediaType
 from pystac.extensions.eo import Band
 import shapely
 from pystac.extensions.raster import RasterBand
 from shapely.geometry import Polygon, mapping, shape
 import rasterio
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+
+from src.misc.constants import Constants
 
 logger = logging.getLogger(__name__)
 
@@ -51,36 +52,6 @@ class Utils:
         return collection
 
     @staticmethod
-    def create_item(item_id: str, polygon, bbox, datetime, start_datetime, end_datetime, src, proj_bounds) -> Item:
-        """
-        packs metadata into a STAC Item
-        @todo add more properties (variable name, date, geometry, url), needed by cubing engine
-        @deprecated this is deprecated
-        """
-        logger.info(f"creating item {item_id}")
-        item = Item(
-            id=item_id,
-            geometry=polygon,
-            bbox=bbox,
-            datetime=datetime,
-            start_datetime=start_datetime,
-            end_datetime=end_datetime,
-            properties={  # These properties are optional, but can speed up the loading of the data.
-                "proj:epsg": src.crs.to_epsg(),
-                "proj:shape": src.shape,
-                # Caveat: this is [height, width] and not [width, height] if you want to set them yourself
-                "proj:bbox": proj_bounds,
-            },
-            stac_extensions=[
-                "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-                "https://stac-extensions.github.io/projection/v2.0.0/schema.json",
-                "https://stac-extensions.github.io/raster/v1.1.0/schema.json"
-            ]
-        )
-
-        return item
-
-    @staticmethod
     def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties) -> Item:
         logger.info(f"creating simple item {item_id}")
         item = Item(id=item_id,
@@ -99,6 +70,17 @@ class Utils:
                     ])
 
         return item
+
+    @staticmethod
+    def create_asset_from(entry) -> Asset:
+        """simple wrapper around Asset creation"""
+        # TODO add file-related properties
+        asset = Utils.create_asset(href=entry[Constants.href_key],
+                                   title=entry[Constants.title_key],
+                                   media_type=MediaType.GEOTIFF)
+
+        return asset
+
 
     @staticmethod
     def create_asset(href: str, title: str, media_type: str) -> Asset:
@@ -131,7 +113,7 @@ class Utils:
     @staticmethod
     def create_raster_band(wrapper: dict) -> RasterBand:
         """it seems it is the only way to set a unit"""
-        unit = Utils.check_key(Soilgrids_Constants.attribute_standard_unit_key, wrapper)
+        unit = Utils.check_key(Constants.attribute_standard_unit_key, wrapper)
         band = RasterBand.create(unit=unit)
 
         return band
@@ -163,7 +145,7 @@ class Utils:
         extra_fields = None
 
         if email is not None:
-            extra_fields = {Soilgrids_Constants.email_key: email}
+            extra_fields = {Constants.email_key: email}
 
         provider = Provider(name=name, url=url, roles=roles, extra_fields=extra_fields)
 

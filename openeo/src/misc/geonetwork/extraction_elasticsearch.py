@@ -32,15 +32,15 @@ class ExtractionElasticsearch(Extraction):
     def check_dataset(self, dataset: dict):
         """check for presence of important keys"""
         logger.info("check elasticsearch dataset content")
-        project = Utils.check_key(Soilgrids_Constants.project_key, dataset)
+        project = Utils.check_key(Constants.project_key, dataset)
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
-        metadata_provider = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        metadata_provider = Utils.check_key(Constants.metadata_provider_key, dataset)
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
         license_url = Utils.check_key(Soilgrids_Constants.url_license_dataset_key, dataset)
         license_name = Utils.check_key(Soilgrids_Constants.license_name_licensed_dataset_key, dataset)
         intellectual_rights = Utils.check_key(Soilgrids_Constants.intellectual_rights_key, dataset)
-        methods = Utils.check_key(Soilgrids_Constants.methods_key, dataset)
+        methods = Utils.check_key(Constants.methods_key, dataset)
         keywords_kpi = Utils.check_key(Soilgrids_Constants.keywords_kpi, dataset)
 
     def extract_providers(self, dataset: dict) -> list[Provider]:
@@ -49,7 +49,7 @@ class ExtractionElasticsearch(Extraction):
         providers = list()
         creators = Utils.check_key(Soilgrids_Constants.creators_key, dataset)
         contacts = Utils.check_key(Soilgrids_Constants.contacts_key, dataset)
-        metadata_providers = Utils.check_key(Soilgrids_Constants.metadata_provider_key, dataset)
+        metadata_providers = Utils.check_key(Constants.metadata_provider_key, dataset)
 
         # people as producer ?
         creator_roles = [ProviderRole.PRODUCER]
@@ -91,8 +91,8 @@ class ExtractionElasticsearch(Extraction):
         logger.info("extract from person")
         provider_name = super().build_name(person[Soilgrids_Constants.individual_name_surname_key],
                                            person[Soilgrids_Constants.individual_name_given_name_key])
-        provider_email = person[Soilgrids_Constants.electronic_email_address_key]
-        provider_url = person[Soilgrids_Constants.user_id_key]
+        provider_email = person[Constants.electronic_email_address_key]
+        provider_url = person[Constants.user_id_key]
         provider = Utils.create_provider(name=provider_name,
                                          roles=roles,
                                          email=provider_email,
@@ -107,7 +107,7 @@ class ExtractionElasticsearch(Extraction):
         citations = []
 
         for step in method_steps:
-            citations.append(Utils.check_key(Soilgrids_Constants.citation_key, step))
+            citations.append(Utils.check_key(Constants.citation_key, step))
 
         if len(citations) != 1:
             raise Exception("incorrect number of citations")
@@ -116,7 +116,7 @@ class ExtractionElasticsearch(Extraction):
 
     def parse_data_tables(self, data_tables: dict):
         logger.info("parse data tables")
-        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, data_tables)
+        attributes = Utils.check_key(Constants.attribute_list_key, data_tables)
         variables = self.extract_attributes(attributes)
 
         return variables
@@ -130,7 +130,7 @@ class ExtractionElasticsearch(Extraction):
     def extract_attributes(self, dataset: dict) -> dict:
         logger.info("extract attributes")
         datatables = Utils.check_key(Soilgrids_Constants.datatables_key, dataset)
-        attributes = Utils.check_key(Soilgrids_Constants.attribute_list_key, datatables[0])
+        attributes = Utils.check_key(Constants.attribute_list_key, datatables[0])
         """to be compared with the hardcoded attributes ?"""
         result = super().parse_attributes(attributes=attributes)
 
@@ -138,8 +138,8 @@ class ExtractionElasticsearch(Extraction):
 
     def extract_title_description(self, project: dict) -> list[str]:
         logger.info("extract title and description")
-        collection_title = Utils.check_key(Soilgrids_Constants.title_key, project)
-        collection_description = Utils.check_key(Soilgrids_Constants.abstract_key, project)
+        collection_title = Utils.check_key(Constants.title_key, project)
+        collection_description = Utils.check_key(Constants.abstract_key, project)
 
         return [collection_title, collection_description]
 

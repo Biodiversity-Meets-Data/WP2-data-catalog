@@ -11,6 +11,7 @@ class Utils:
     def get_extraction_instance(query_type: QueryTypes):
         """get specific instance based on argument"""
         logging.info(f"get extraction instance for {query_type}")
+        # lazy import here to prevent circular import
         from src.misc.geonetwork.extraction_elasticsearch import ExtractionElasticsearch
         from src.misc.geonetwork.extraction_eml import ExtractionEML
 

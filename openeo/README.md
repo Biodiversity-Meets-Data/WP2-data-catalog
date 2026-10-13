@@ -4,10 +4,12 @@ Let's try another API, this time to convert a resource to a STAC-compatible reso
 Bunch of links:
 
 - use openeo for discoverable datasources
-- Soil grid (https://rest.isric.org/soilgrids/v2.0/docs) -> stac json -> openeo
-- https://data.isric.org/geonetwork/srv/eng/catalog.search#/home (geonetwork instance)
-- https://github.com/gantian127/soilgrids
-- https://rest.isric.org/soilgrids/v2.0/docs
+- Soilgrids (https://rest.isric.org/soilgrids/v2.0/docs) -> stac json -> openeo
+  - https://data.isric.org/geonetwork/srv/eng/catalog.search#/home (geonetwork instance)
+  - https://github.com/gantian127/soilgrids
+  - https://rest.isric.org/soilgrids/v2.0/docs
+- Bio-oracle (https://bio-oracle.org)
+  - https://github.com/bio-oracle/pyo_oracle
 - https://docs.openeo.cloud/getting-started/client-side-processing/#background
 - https://docs.openeo.cloud/getting-started/client-side-processing/#stac-collections-and-items
 - https://github.com/Open-EO/openeo-community-examples/blob/main/python/LoadStac/load-stac-item-example.ipynb
@@ -52,7 +54,7 @@ conda install conda-forge::rasterio
 conda install conda-forge::stac-validator
 ```
 
-### geotiff -> stac
+## Soilgrids: geotiff -> stac
 
 Use
 
@@ -367,10 +369,13 @@ It still contains some Geonetwork/Elasticsearch metadata. Besides these, some us
 
 Use these to replace hard-coded values. 
 
-In case of encoding issues, use another endpoint
+A better endpoint is:
 
 ```html
 https://metadatacatalogue.lifewatch.eu/srv/api/records/8315df49-bde3-4138-8f71-9b722f3afd06/formatters/json
 ```
 
-It seems better than the first endpoint, but the payload is not identical, thus requiring code refactoring.
+It prevents encoding issues, but the payload is not identical, thus requiring code refactoring.
+
+## Bio-oracle
+

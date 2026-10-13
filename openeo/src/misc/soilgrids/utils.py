@@ -1,7 +1,15 @@
 import logging
-import rasterio.warp
+import os
+import time
+from pathlib import Path
+from urllib.parse import urlparse
+
 from pystac import RelType, Link, MediaType
-from shapely.geometry import Polygon, mapping
+import rasterio.warp
+from rasterio import RasterioIOError
+from shapely.geometry import Polygon, box, mapping
+from shapely.ops import unary_union
+
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
 from src.misc.constants import Constants
@@ -116,3 +124,46 @@ class Utils:
     def create_collection_id(resolution: int):
         """create soilgrids collection identifier"""
         return f"soilgrids_collection_{resolution}m"
+
+    @staticmethod
+    def extract_from_urls(urls, projection):
+        """extract geometry and bbox from multiple urls, keeping track of unreachable urls"""
+        logger.info("extracting from sources")
+        geometries = []
+        missing = []
+
+        for url in urls:
+            logger.info(f"extracting from {url}")
+            try:
+                with rasterio.open(url) as src:
+                    src_crs = src.crs
+                    left, bottom, right, top = rasterio.warp.transform_bounds(src_crs, projection, *src.bounds)
+                    geom = box(left, bottom, right, top)
+                    geometries.append(geom)
+                    # required otherwise most queries will fail due to rate limitation
+                    time.sleep(2)
+            except RasterioIOError:
+                logger.error(f"CANNOT OPEN {url}")
+                missing.append(url)
+
+        merged_geom = unary_union(geometries)
+        geometry = mapping(merged_geom)
+        bbox = list(merged_geom.bounds)
+
+        return geometry, bbox, missing
+
+    @staticmethod
+    def generate_entries(resolution: str, variable_names: list[str]):
+        """generates a wrapper for later use, contains url and other metadata"""
+        logger.info(f"generate entries for resolution {resolution}")
+        entries = list()
+        urls = Utils.generate_urls(variable_names, Soilgrids_Constants.band_names, [resolution])
+
+        for url in urls:
+            entries.append({
+                Constants.href_key: url,
+                Constants.title_key: Path(os.path.basename(urlparse(url).path)).stem,
+                Constants.resolution_key: resolution
+            })
+
+        return entries
