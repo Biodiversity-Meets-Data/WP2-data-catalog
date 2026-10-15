@@ -9,9 +9,12 @@ import rasterio.warp
 from rasterio import RasterioIOError
 from shapely.geometry import Polygon, box, mapping
 from shapely.ops import unary_union
+from pystac.extensions.eo import EOExtension
+from pystac.extensions.raster import RasterExtension
 
 from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
 from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
+from src.misc.utils import Utils as Global_Utils
 from src.misc.constants import Constants
 from src.misc.query_types import QueryTypes
 
@@ -167,3 +170,56 @@ class Utils:
             })
 
         return entries
+
+    @staticmethod
+    def create_item_from_rasters(variable_name: str, item_id: str, entries: list, projection: str,
+                                 attributes: dict, properties: dict, date_time, start_datetime, end_datetime):
+        """
+        - reads multiple urls (if they exist), each associated with a variable
+        - create a single Item
+        - create one Asset per url
+        - associate Assets and Item
+        """
+        logger.info("create item from rasters")
+        hrefs = map(lambda entry: entry[Constants.href_key], entries)
+        geometry, bbox, missing_urls = Utils.extract_from_urls(hrefs, projection)
+
+        if len(missing_urls) == len(entries):
+            logger.warning(f"nothing to be done for {item_id}")
+            return None
+        else:
+            item = Global_Utils.create_simple_item(item_id=item_id,
+                                                   datetime=date_time,
+                                                   start_datetime=start_datetime,
+                                                   end_datetime=end_datetime,
+                                                   bbox=bbox,
+                                                   geometry=geometry,
+                                                   properties=properties)
+
+            # assets must be added to item first
+            for entry in entries:
+                url = entry[Constants.href_key]
+
+                if url in missing_urls:
+                    logger.warning(f"skipping {url}")
+                else:
+                    title = entry[Constants.title_key]
+                    # filename = os.path.basename(urlparse(url).path)
+                    band_name = Utils.extract_band_from_name(file_name=title,
+                                                             known_bands=Soilgrids_Constants.band_names)
+                    asset = Global_Utils.create_asset_from(entry)
+                    item.add_asset(title, asset)
+
+                    eo = EOExtension.ext(asset, add_if_missing=True)
+                    eo.apply(bands=Global_Utils.create_bands([band_name]))
+
+                    # reuse attribute data read from the datasource (catalog)
+                    if variable_name in attributes:
+                        logger.info("there are attributes to add")
+                        raster_band = Global_Utils.create_raster_band(attributes[variable_name])
+                        raster_ext = RasterExtension.ext(asset, add_if_missing=True)
+                        raster_ext.apply(bands=[raster_band])
+
+            item.validate()
+
+        return item
