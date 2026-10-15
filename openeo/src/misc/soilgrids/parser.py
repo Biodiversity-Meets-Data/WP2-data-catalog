@@ -1,23 +1,21 @@
 import logging
 from datetime import datetime
 
-from pystac import Asset, RelType, Extent, CatalogType
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
-from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
-from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
-from src.misc.utils import Utils
+from pystac import RelType, Extent, CatalogType
+
+from src.parser_interface import ParserInterface
 from src.misc.constants import Constants
-from src.stac_interface import STACInterface
+from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
+from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
+from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
+from src.misc.utils import Utils
 from src.misc.query_types import QueryTypes
 
 logger = logging.getLogger(__name__)
 
 
-class ConvertMultipleAssets(STACInterface):
-    """the strategy is to group multiple Assets (soil depths) into a single Item (variable)"""
-
+class Parser(ParserInterface):
     def __init__(self, arguments):
-        """keep command line arguments"""
         super().__init__(arguments)
         self.date_time = datetime.fromisoformat(arguments.datetime)
         self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
@@ -25,6 +23,9 @@ class ConvertMultipleAssets(STACInterface):
         self.projection = Constants.DEFAULT_PROJECTION
         self.output_path = arguments.output_path
         self.query_type = QueryTypes.EML
+
+    def manage_arguments(self, arguments):
+        pass
 
     def convert(self):
         """

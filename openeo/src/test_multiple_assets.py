@@ -1,5 +1,6 @@
 import argparse
-from src.convert_multiple_assets import ConvertMultipleAssets
+# from src.convert_multiple_assets import ConvertMultipleAssets
+from src.misc.soilgrids.parser import Parser
 
 # parser for arguments
 parser = argparse.ArgumentParser(
@@ -15,5 +16,6 @@ args = parser.parse_args()
 
 # entry point
 if __name__ == "__main__":
-    convert = ConvertMultipleAssets(arguments=args)
+    # convert = ConvertMultipleAssets(arguments=args)
+    convert = Parser(arguments=args)
     convert.run()
