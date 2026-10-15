@@ -54,7 +54,9 @@ conda install conda-forge::rasterio
 conda install conda-forge::stac-validator
 ```
 
-## Soilgrids: geotiff -> stac
+## Soilgrids
+
+### geotiff -> stac
 
 Use
 
@@ -379,3 +381,34 @@ It prevents encoding issues, but the payload is not identical, thus requiring co
 
 ## Bio-oracle
 
+- https://github.com/bio-oracle/pyo_oracle
+- https://bio-oracle.github.io/pyo_oracle/
+- https://erddap.bio-oracle.org/erddap/index.html
+
+```bash
+conda install conda-forge::httpx
+conda install conda-forge::pyo-oracle
+```
+
+### Naming convention
+
+Dataset identifier:
+
+```
+[variable]_[scenario/baseline]_[start_year]_[end_year]_[depth]
+
+ex: tas_baseline_2000_2020_depthsurf
+```
+
+### Suggested structure
+
+Single collection, one item per bio_oracle datasets to prevent cluttering other catalog. 
+
+```mermaid
+flowchart TD
+  C1(collection)
+  C1 --> I1(Item 1)
+  C1 --> I2(Item 2)
+  C1 --> I3(Item ...)
+  C1 --> In(Item n)
+```
