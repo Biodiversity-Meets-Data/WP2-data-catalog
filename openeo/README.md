@@ -411,4 +411,8 @@ flowchart TD
   C1 --> I2(Item 2)
   C1 --> I3(Item ...)
   C1 --> In(Item n)
+  I1 --> A1(Asset 1)
+  I2 --> A2(Asset 2)
+  I3 --> A3(Asset ...)
+  In --> An(Asset n)
 ```
