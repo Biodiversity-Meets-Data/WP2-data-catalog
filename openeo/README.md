@@ -67,7 +67,7 @@ Use
  
 ```bash
 # version for multiple assets per item
-python -m src.test_multiple_assets \ 
+python -m src.stac_conversion_entry_point \ 
   -d "1905-04-01" \ 
   -s "1905-04-01" \ 
   -e "2016-07-05" \  
