@@ -98,12 +98,11 @@ class ExtractionEML(Extraction):
 
     def extract_citation(self, methods: dict) -> str:
         logger.info("extract citations")
-        method_step = Utils.check_key(key=Constants.method_step_key, wrapper=methods)
-        citation = Utils.check_key(key=Constants.citation_key, wrapper=method_step)[0]
+        citation = Utils.check_key(key=Constants.citation_key, wrapper=methods)[0]
 
         return citation
 
-    def extract_doi(self, citation: str) -> str:
+    def extract_doi(self, citation: str) -> str | None:
         logger.info("extract doi")
         doi = None
         """use regexp"""
@@ -116,12 +115,8 @@ class ExtractionEML(Extraction):
 
     def extract_keywords(self, dataset: dict) -> list[str]:
         logger.info("extract keywords")
-        keywords = list()
         keyword_set = Utils.check_key(key=Constants.keyword_set_key, wrapper=dataset)
-
-        for wrapper in keyword_set:
-            keyword = Utils.check_key(key=Constants.keyword_key, wrapper=wrapper)
-            keywords.append(keyword)
+        keywords = Utils.check_key(key=Constants.keyword_key, wrapper=keyword_set)
 
         return keywords
 

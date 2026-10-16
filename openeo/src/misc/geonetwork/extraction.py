@@ -106,7 +106,7 @@ class Extraction(ABC):
         """often a publication"""
         pass
 
-    def extract_doi(self, citation) -> str:
+    def extract_doi(self, citation) -> str | None:
         """should be in the citation"""
         pass
 
@@ -114,7 +114,7 @@ class Extraction(ABC):
         """specific keywords found in the payload"""
         pass
 
-    def extract_title_description(self, project: dict) -> str:
+    def extract_title_description(self, project: dict) -> list[str]:
         """title and description are often found together"""
         pass
 

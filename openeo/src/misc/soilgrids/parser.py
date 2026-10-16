@@ -56,7 +56,7 @@ class Parser(ParserInterface):
             collection_id = Soilgrids_Utils.create_collection_id(resolution)
             # citations
             methods = Utils.check_key(Constants.methods_key, soilgrids_dataset)
-            first_citation = extractor.extract_citation(methods=methods)
+            first_citation = extractor.extract_citation(methods=methods[0])
             doi = extractor.extract_doi(citation=first_citation)
             # extra fields
             extra_fields = {

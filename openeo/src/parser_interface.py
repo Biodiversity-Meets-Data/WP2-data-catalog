@@ -1,12 +1,12 @@
 import logging
-from abc import ABCMeta, abstractmethod
+
+from abc import ABCMeta, abstractmethod, ABC
 from datetime import datetime
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
-class ParserInterface:
+class ParserInterface(ABC):
     """
     - behavior shared by subclasses: manage commandline arguments -> log -> convert
     - one child class per datasource
@@ -24,12 +24,9 @@ class ParserInterface:
     def convert(self): raise NotImplementedError
 
     def run(self):
-        try:
-            logger.info("start")
-            start = datetime.now()
-            self.convert()
-            end = datetime.now()
-            elapsed = end - start
-            logger.info(f"end in {elapsed}")
-        except Exception as e:
-            logger.exception("global exception")
+        logger.info("start")
+        start = datetime.now()
+        self.convert()
+        end = datetime.now()
+        elapsed = end - start
+        logger.info(f"end in {elapsed}")
