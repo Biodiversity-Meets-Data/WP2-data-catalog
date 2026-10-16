@@ -35,10 +35,8 @@ class Parser(ParserInterface):
         - normalize and save
         """
         # TODO: add dates, geometry
-        # get geonetwork dataset
-        extractor = Geonetwork_Utils.get_extraction_instance(self.query_type)
-        soilgrids_dataset = extractor.query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid,
-                                                    query_type=self.query_type)
+        extractor = super().get_extractor()
+        soilgrids_dataset = super().query_dataset(uuid=Soilgrids_Constants.soilgrids_dataset_uuid)
 
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
