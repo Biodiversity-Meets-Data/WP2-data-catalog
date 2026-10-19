@@ -1,13 +1,17 @@
 import logging
+from typing import Any
+
 import requests
 
 from abc import ABCMeta, abstractmethod, ABC
 from datetime import datetime
 
-# from pystac import Catalog, Item, Collection, CatalogType
+from pystac import Collection, Item, Extent, Provider
 
+from src.misc.constants import Constants
 from src.misc.query_types import QueryTypes
-from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
+from src.misc.geonetwork.utils import Utils as GeonetworkUtils
+from src.misc.utils import Utils
 
 logger = logging.getLogger(__name__)
 
@@ -23,13 +27,14 @@ class ParserInterface(ABC):
         # check with some logic ?
         self.manage_arguments(args)
         self.output_path = args.output_path
+        # only EML, elasticsearch support removed
         self.query_type = QueryTypes.EML
 
     @abstractmethod
     def manage_arguments(self, arguments): raise NotImplementedError
 
     def get_extractor(self):
-        return Geonetwork_Utils.get_extraction_instance(self.query_type)
+        return GeonetworkUtils.get_extraction_instance(self.query_type)
 
     def query_dataset(self, uuid: str) -> dict:
         # get geonetwork dataset
@@ -37,12 +42,61 @@ class ParserInterface(ABC):
 
         return dataset
 
-    # @abstractmethod
-    # def create_items(self) -> list[Item]: raise NotImplementedError
-    #
-    # @abstractmethod
-    # def create_collection(self) -> Collection: raise NotImplementedError
-    #
+    @abstractmethod
+    def create_item(self, wrapper: dict) -> Item | None: raise NotImplementedError
+
+    @abstractmethod
+    def create_collection_id(self, wrapper: dict) -> str: raise NotImplementedError
+
+    def get_collection_title(self, dataset) -> list[str]:
+        project = Utils.check_key(Constants.project_key, dataset)
+
+        return self.get_extractor().extract_title_description(project=project)
+
+    def get_collection_license(self, dataset) -> list[str]:
+        return self.get_extractor().extract_license(dataset=dataset)
+
+    def get_keywords(self, dataset, keywords: list[str]) -> list[str]:
+        extracted_keywords = self.get_extractor().extract_keywords(dataset=dataset)
+        # make it unique with set()
+        collection_keywords = list(set(extracted_keywords + keywords))
+
+        return collection_keywords
+
+    def get_providers(self, dataset) -> list[Provider]:
+        return self.get_extractor().extract_providers(dataset=dataset)
+
+    def get_extra_fields(self, dataset):
+        methods = Utils.check_key(Constants.methods_key, dataset)
+        first_citation = self.get_extractor().extract_citation(methods=methods[0])
+        doi = self.get_extractor().extract_doi(citation=first_citation)
+        # extra fields
+        return {
+            "sci:citation": first_citation,
+            "sci:doi": doi,
+            "proj:code": Constants.HOMOLOSINE_CODE
+        }
+
+    def get_extent(self, wrapper) -> Extent: raise NotImplementedError
+
+    def create_collection(self,
+                          collection_id: str,
+                          title: str,
+                          description: str,
+                          extent: Extent,
+                          license: str,
+                          keywords: list[str] | None = None,
+                          providers: list[Provider] | None = None,
+                          extra_fields: dict[str, Any] | None = None) -> Collection:
+        return Utils.create_collection(collection_id=collection_id,
+                                       title=title,
+                                       description=description,
+                                       extent=extent,
+                                       license=license,
+                                       keywords=keywords,
+                                       providers=providers,
+                                       extra_fields=extra_fields)
+
     # @abstractmethod
     # def create_catalog(self) -> Catalog: raise NotImplementedError
     #

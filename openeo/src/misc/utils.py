@@ -31,7 +31,7 @@ class Utils:
                           title: str,
                           description: str,
                           extent: Extent,
-                          license: str | None = None,
+                          license: str,
                           keywords: list[str] | None = None,
                           providers: list[Provider] | None = None,
                           extra_fields: dict[str, Any] | None = None) -> Collection:

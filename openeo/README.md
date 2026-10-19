@@ -54,6 +54,12 @@ conda install conda-forge::rasterio
 conda install conda-forge::stac-validator
 ```
 
+## Resources
+
+### Projections
+
+https://epsg.io/
+
 ## Soilgrids
 
 ### geotiff -> stac

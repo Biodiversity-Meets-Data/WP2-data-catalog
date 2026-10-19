@@ -1,5 +1,6 @@
 class Constants:
     """constants used throughout the code"""
+    catalog_id = "soilgrids_catalog"
     max_nbr_tokens = 4
     token_separator = "_"
     isric_base_url = "https://isric.org/"
