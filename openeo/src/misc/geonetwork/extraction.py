@@ -114,11 +114,11 @@ class Extraction(ABC):
         """specific keywords found in the payload"""
         pass
 
-    def extract_title_description(self, project: dict) -> list[str]:
+    def extract_title_description(self, project: dict) -> tuple[str, str]:
         """title and description are often found together"""
         pass
 
-    def extract_license(self, dataset: dict) -> list[str]:
+    def extract_license(self, dataset: dict) -> tuple[str, str]:
         pass
 
     def extract_attributes(self, dataset: dict) -> dict:

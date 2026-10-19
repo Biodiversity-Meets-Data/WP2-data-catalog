@@ -25,11 +25,9 @@ class Parser(ParserInterface):
         # collection properties
         # TODO
         collection_id = self.create_collection_id({})
-        collection_title_description = super().get_collection_title(dataset)
+        collection_title, collection_description = super().get_collection_title(dataset)
         collection_providers = super().get_providers(dataset)
-        license_wrapper = super().get_collection_license(dataset)
-        collection_license_name = license_wrapper[0]
-        license_url = license_wrapper[1]
+        collection_license_name, license_url = super().get_collection_license(dataset)
         collection_license_link = Utils.create_link(rel="license",
                                                     href=license_url,
                                                     type="text/html",
@@ -49,8 +47,8 @@ class Parser(ParserInterface):
         collection_extent = self.get_extent({Constants.items_key: items})
 
         collection = super().create_collection(collection_id=collection_id,
-                                               title=collection_title_description[0],
-                                               description=collection_title_description[1],
+                                               title=collection_title,
+                                               description=collection_description,
                                                extent=collection_extent,
                                                license=collection_license_name,
                                                keywords=collection_keywords,

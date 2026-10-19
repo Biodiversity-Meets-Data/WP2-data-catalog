@@ -6,8 +6,7 @@ from pystac import RelType, Extent, CatalogType, Item, Collection
 from src.parser_interface import ParserInterface
 from src.misc.constants import Constants
 from src.misc.soilgrids.constants import Constants as SoilgridsConstants
-from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
-from src.misc.soilgrids.utils import Utils as Soilgrids_Utils
+from src.misc.soilgrids.utils import Utils as SoilgridsUtils
 from src.misc.utils import Utils
 from src.misc.query_types import QueryTypes
 
@@ -17,9 +16,6 @@ logger = logging.getLogger(__name__)
 class Parser(ParserInterface):
     def __init__(self, arguments):
         super().__init__(arguments)
-        self.date_time = datetime.fromisoformat(arguments.datetime)
-        self.start_datetime = datetime.fromisoformat(arguments.start_datetime)
-        self.end_datetime = datetime.fromisoformat(arguments.end_datetime)
         self.projection = Constants.DEFAULT_PROJECTION
         self.output_path = arguments.output_path
         self.query_type = QueryTypes.EML
@@ -34,7 +30,7 @@ class Parser(ParserInterface):
         - associate Items and Collection, Collection and Catalog,
         - normalize and save
         """
-        # TODO: add dates, geometry
+        # TODO: add geometry
         extractor = super().get_extractor()
         soilgrids_dataset = super().query_dataset(uuid=SoilgridsConstants.soilgrids_dataset_uuid)
 
@@ -47,6 +43,7 @@ class Parser(ParserInterface):
         # variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
         variable_names = SoilgridsConstants.VARIABLE_NAMES
         attributes = extractor.extract_attributes(soilgrids_dataset)
+        start_datetime, end_datetime, datetime = self.get_dates(soilgrids_dataset)
 
         for resolution in resolutions:
             items = list()
@@ -55,8 +52,8 @@ class Parser(ParserInterface):
             extra_fields = super().get_extra_fields(soilgrids_dataset)
 
             for variable_name in variable_names:
-                entries = Soilgrids_Utils.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item_id = Soilgrids_Utils.create_item_id(collection_id=collection_id, variable_name=variable_name)
+                entries = SoilgridsUtils.generate_entries(resolution=resolution, variable_names=[variable_name])
+                item_id = SoilgridsUtils.create_item_id(collection_id=collection_id, variable_name=variable_name)
                 properties = extra_fields.copy()
                 properties["soilgrids:variable"] = variable_name
                 item = self.create_item({
@@ -64,7 +61,10 @@ class Parser(ParserInterface):
                     Constants.attributes_key: attributes,
                     Constants.entries_key: entries,
                     Constants.item_id_key: item_id,
-                    Constants.variable_name_key: variable_name
+                    Constants.variable_name_key: variable_name,
+                    Constants.begin_date_key: start_datetime,
+                    Constants.end_date_key: end_datetime,
+                    Constants.datetime_key: datetime
                 })
 
                 if item is not None:
@@ -74,9 +74,7 @@ class Parser(ParserInterface):
             added_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
             collection_keywords = super().get_keywords(dataset=soilgrids_dataset, keywords=added_keywords)
             # license name and url
-            license_wrapper = super().get_collection_license(soilgrids_dataset)
-            collection_license_name = license_wrapper[0]
-            license_url = license_wrapper[1]
+            collection_license_name, license_url = super().get_collection_license(soilgrids_dataset)
             collection_license_link = Utils.create_link(rel="license",
                                                         href=license_url,
                                                         type="text/html",
@@ -98,7 +96,7 @@ class Parser(ParserInterface):
                                                            extra_fields=extra_fields)
 
             # absolute links
-            links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=self.query_type)
+            links = SoilgridsUtils.create_links(rel_type=RelType.VIA, action=self.query_type)
             soilgrids_collection.add_links(links)
 
             # add bottom to top
@@ -113,7 +111,7 @@ class Parser(ParserInterface):
     def create_collection_id(self, wrapper: dict) -> str:
         resolution = Utils.check_key(Constants.resolution_key, wrapper)
 
-        return Soilgrids_Utils.create_collection_id(resolution)
+        return SoilgridsUtils.create_collection_id(resolution)
 
     def create_item(self, wrapper: dict) -> Item | None:
         variable_name = Utils.check_key(Constants.variable_name_key, wrapper)
@@ -121,21 +119,24 @@ class Parser(ParserInterface):
         entries = Utils.check_key(Constants.entries_key, wrapper)
         attributes = Utils.check_key(Constants.attributes_key, wrapper)
         properties = Utils.check_key(Constants.properties_key, wrapper)
+        start_datetime = datetime.fromisoformat(Utils.check_key(Constants.begin_date_key, wrapper))
+        end_datetime = datetime.fromisoformat(Utils.check_key(Constants.end_date_key, wrapper))
+        date_time = datetime.fromisoformat(Utils.check_key(Constants.datetime_key, wrapper))
 
-        item = Soilgrids_Utils.create_item_from_rasters(variable_name,
-                                                        item_id=item_id,
-                                                        entries=entries,
-                                                        projection=self.projection,
-                                                        attributes=attributes,
-                                                        properties=properties,
-                                                        date_time=self.date_time,
-                                                        start_datetime=self.start_datetime,
-                                                        end_datetime=self.end_datetime)
+        item = SoilgridsUtils.create_item_from_rasters(variable_name,
+                                                       item_id=item_id,
+                                                       entries=entries,
+                                                       projection=self.projection,
+                                                       attributes=attributes,
+                                                       properties=properties,
+                                                       date_time=date_time,
+                                                       start_datetime=start_datetime,
+                                                       end_datetime=end_datetime)
 
         if item is None:
             logger.warning(f"no item for {variable_name}")
         else:
-            links = Soilgrids_Utils.create_links(rel_type=RelType.VIA, action=self.query_type)
+            links = SoilgridsUtils.create_links(rel_type=RelType.VIA, action=self.query_type)
             item.add_links(links)
 
         return item

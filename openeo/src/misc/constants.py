@@ -46,3 +46,8 @@ class Constants:
     properties_key = "properties"
     collection_id_key = "collection_id"
     items_key = "items"
+    coverage_key = "coverage"
+    temporal_coverage_key = "temporalCoverage"
+    begin_date_key = "beginDate"
+    end_date_key = "endDate"
+    datetime_key = "datetime"

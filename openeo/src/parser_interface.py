@@ -48,12 +48,12 @@ class ParserInterface(ABC):
     @abstractmethod
     def create_collection_id(self, wrapper: dict) -> str: raise NotImplementedError
 
-    def get_collection_title(self, dataset) -> list[str]:
+    def get_collection_title(self, dataset) -> tuple[str, str]:
         project = Utils.check_key(Constants.project_key, dataset)
 
         return self.get_extractor().extract_title_description(project=project)
 
-    def get_collection_license(self, dataset) -> list[str]:
+    def get_collection_license(self, dataset) -> tuple[str, str]:
         return self.get_extractor().extract_license(dataset=dataset)
 
     def get_keywords(self, dataset, keywords: list[str]) -> list[str]:
@@ -96,6 +96,15 @@ class ParserInterface(ABC):
                                        keywords=keywords,
                                        providers=providers,
                                        extra_fields=extra_fields)
+
+    def get_dates(self, dataset) -> tuple[str, str, str]:
+        temporal = Utils.check_key(Constants.coverage_key, dataset)
+        coverage = Utils.check_key(Constants.temporal_coverage_key, temporal)[0]
+        start_date = Utils.check_key(Constants.begin_date_key, coverage)[0]
+        end_date = Utils.check_key(Constants.end_date_key, coverage)[0]
+        datetime = end_date
+
+        return start_date, end_date, datetime
 
     # @abstractmethod
     # def create_catalog(self) -> Catalog: raise NotImplementedError

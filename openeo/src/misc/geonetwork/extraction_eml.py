@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import Any
 
 from pystac import Provider, ProviderRole
 
@@ -120,19 +121,19 @@ class ExtractionEML(Extraction):
 
         return keywords
 
-    def extract_title_description(self, project: dict) -> list[str]:
+    def extract_title_description(self, project: dict) -> tuple[str, str]:
         logger.info("extract title and description")
         collection_title = Utils.check_key(Constants.title_key, project)
         collection_description = Utils.check_key(Constants.abstract_key, project)[0]
 
-        return [collection_title, collection_description]
+        return collection_title, collection_description
 
-    def extract_license(self, dataset: dict) -> list[str]:
+    def extract_license(self, dataset: dict) -> tuple[str, str]:
         licensed = Utils.check_key(Constants.licensed_key, dataset)
         license_name = Utils.check_key(Constants.license_name_key, licensed)
         license_url = Utils.check_key(Constants.url_key, licensed)
 
-        return [license_name, license_url]
+        return license_name, license_url
 
     def extract_attributes(self, dataset: dict) -> dict:
         logger.info("extract attributes")
