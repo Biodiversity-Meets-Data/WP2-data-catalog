@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from pystac import RelType, Extent, CatalogType, Item, Collection
+from pystac import RelType, Extent, CatalogType, Item, Collection, SpatialExtent, TemporalExtent
 
 from src.parser_interface import ParserInterface
 from src.misc.constants import Constants
@@ -82,13 +82,13 @@ class Parser(ParserInterface):
             # many providers
             collection_providers = super().get_providers(soilgrids_dataset)
             # wrapper for title and description
-            collection_title_description = super().get_collection_title(soilgrids_dataset)
+            collection_title, collection_description = super().get_collection_title(soilgrids_dataset)
             # gather extents
-            collection_extent = self.get_extent({Constants.items_key: items})
+            collection_extent = self.get_extents(dataset=soilgrids_dataset)
 
             soilgrids_collection = super().create_collection(collection_id=collection_id,
-                                                           title=collection_title_description[0],
-                                                           description=collection_title_description[1],
+                                                           title=collection_title,
+                                                           description=collection_description,
                                                            extent=collection_extent,
                                                            license=collection_license_name,
                                                            keywords=collection_keywords,

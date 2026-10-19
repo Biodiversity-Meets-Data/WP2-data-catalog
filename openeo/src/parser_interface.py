@@ -6,7 +6,7 @@ import requests
 from abc import ABCMeta, abstractmethod, ABC
 from datetime import datetime
 
-from pystac import Collection, Item, Extent, Provider
+from pystac import Collection, Item, Extent, Provider, SpatialExtent, TemporalExtent
 
 from src.misc.constants import Constants
 from src.misc.query_types import QueryTypes
@@ -77,8 +77,6 @@ class ParserInterface(ABC):
             "proj:code": Constants.HOMOLOSINE_CODE
         }
 
-    def get_extent(self, wrapper) -> Extent: raise NotImplementedError
-
     def create_collection(self,
                           collection_id: str,
                           title: str,
@@ -98,13 +96,33 @@ class ParserInterface(ABC):
                                        extra_fields=extra_fields)
 
     def get_dates(self, dataset) -> tuple[str, str, str]:
-        temporal = Utils.check_key(Constants.coverage_key, dataset)
-        coverage = Utils.check_key(Constants.temporal_coverage_key, temporal)[0]
-        start_date = Utils.check_key(Constants.begin_date_key, coverage)[0]
-        end_date = Utils.check_key(Constants.end_date_key, coverage)[0]
+        coverage = Utils.check_key(Constants.coverage_key, dataset)
+        temporal = Utils.check_key(Constants.temporal_coverage_key, coverage)[0]
+        start_date = Utils.check_key(Constants.begin_date_key, temporal)[0]
+        end_date = Utils.check_key(Constants.end_date_key, temporal)[0]
         datetime = end_date
 
         return start_date, end_date, datetime
+
+    def get_bounding_coordinates(self, dataset) -> tuple[float, float, float, float]:
+        coverage = Utils.check_key(Constants.coverage_key, dataset)
+        geographical = Utils.check_key(Constants.geographic_coverage_key, coverage)
+        bounding_coordinates = Utils.check_key(Constants.bounding_coordinates_key, geographical)
+        west = float(Utils.check_key(Constants.west_bounding_key, bounding_coordinates))
+        east = float(Utils.check_key(Constants.east_bounding_key, bounding_coordinates))
+        north = float(Utils.check_key(Constants.north_bounding_key, bounding_coordinates))
+        south = float(Utils.check_key(Constants.south_bounding_key, bounding_coordinates))
+
+        return west, east, north, south
+
+    def get_extents(self, dataset):
+        west, east, north, south = self.get_bounding_coordinates(dataset)
+        start_datetime, end_datetime, date_time = self.get_dates(dataset)
+        spatial = SpatialExtent(bboxes=[[west, south, east, north]])
+        temporal = TemporalExtent(intervals=[[datetime.fromisoformat(start_datetime), datetime.fromisoformat(end_datetime)]])
+        extent = Extent(spatial, temporal)
+
+        return extent
 
     # @abstractmethod
     # def create_catalog(self) -> Catalog: raise NotImplementedError

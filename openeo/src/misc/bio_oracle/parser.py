@@ -44,7 +44,7 @@ class Parser(ParserInterface):
             properties["soilgrids:variable"] = attribute
             items.append(item)
 
-        collection_extent = self.get_extent({Constants.items_key: items})
+        collection_extent = self.get_extents(dataset=dataset)
 
         collection = super().create_collection(collection_id=collection_id,
                                                title=collection_title,
