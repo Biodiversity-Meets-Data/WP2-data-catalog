@@ -189,7 +189,7 @@ class Utils:
             return None
         else:
             item = Global_Utils.create_simple_item(item_id=item_id,
-                                                   datetime=date_time,
+                                                   date_time=date_time,
                                                    start_datetime=start_datetime,
                                                    end_datetime=end_datetime,
                                                    bbox=bbox,

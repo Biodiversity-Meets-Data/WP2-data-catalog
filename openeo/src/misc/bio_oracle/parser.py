@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 from pystac import CatalogType, Item
 
 from src.parser_interface import ParserInterface
 from src.misc.bio_oracle.constants import Constants as BioOracleConstants
 from src.misc.utils import Utils
+from src.misc.constants import Constants
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +24,6 @@ class Parser(ParserInterface):
         dataset = self.query_dataset(uuid=BioOracleConstants.dataset_id)
         catalog = Utils.create_catalog(BioOracleConstants.catalog_id, BioOracleConstants.catalog_id)
         # collection properties
-        # TODO
         collection_id = self.create_collection_id({})
         collection_title, collection_description = self.get_collection_title(dataset)
         collection_providers = self.get_providers(dataset)
@@ -32,27 +33,37 @@ class Parser(ParserInterface):
                                                     type="text/html",
                                                     title=collection_license_name)
         attributes = extractor.extract_attributes(dataset)
-        collection_keywords = self.get_keywords(dataset=dataset, keywords=attributes)
+        collection_keywords = self.get_keywords(dataset=dataset, keywords=list(attributes.keys()))
         extra_fields = self.get_extra_fields(dataset)
+        start_datetime, end_datetime, date_time = self.get_dates(dataset=dataset)
+        bbox = self.get_bbox(dataset=dataset)
+        geometry = self.get_geometry(dataset=dataset)
         items = list()
 
         for attribute in attributes:
-            # TODO
-            item = self.create_item(wrapper={})
             properties = extra_fields.copy()
             properties["soilgrids:variable"] = attribute
+            item = self.create_item(wrapper={
+                Constants.item_id_key: self.create_item_id({Constants.variable_name_key: attribute}),
+                Constants.begin_date_key: datetime.fromisoformat(start_datetime),
+                Constants.end_date_key: datetime.fromisoformat(end_datetime),
+                Constants.datetime_key: datetime.fromisoformat(date_time),
+                Constants.properties_key: properties,
+                Constants.bbox_key: bbox,
+                Constants.geometry: geometry
+            })
             items.append(item)
 
         collection_extent = self.get_extents(dataset=dataset)
 
         collection = self.create_collection(collection_id=collection_id,
-                                               title=collection_title,
-                                               description=collection_description,
-                                               extent=collection_extent,
-                                               license=collection_license_name,
-                                               keywords=collection_keywords,
-                                               providers=collection_providers,
-                                               extra_fields=extra_fields)
+                                            title=collection_title,
+                                            description=collection_description,
+                                            extent=collection_extent,
+                                            license=collection_license_name,
+                                            keywords=collection_keywords,
+                                            providers=collection_providers,
+                                            extra_fields=extra_fields)
 
         # add bottom to top
         collection.add_items(items)
@@ -62,7 +73,26 @@ class Parser(ParserInterface):
         catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
 
     def create_item(self, wrapper: dict) -> Item | None:
-        pass
+        item_id = Utils.check_key(Constants.item_id_key, wrapper)
+        date_time = Utils.check_key(Constants.datetime_key, wrapper)
+        start_datetime = Utils.check_key(Constants.begin_date_key, wrapper)
+        end_datetime = Utils.check_key(Constants.end_date_key, wrapper)
+        bbox = Utils.check_key(Constants.bbox_key, wrapper)
+        geometry = Utils.check_key(Constants.geometry, wrapper)
+        properties = Utils.check_key(Constants.properties_key, wrapper)
+
+        item = Utils.create_simple_item(item_id=item_id,
+                                        date_time=date_time,
+                                        start_datetime=start_datetime,
+                                        end_datetime=end_datetime,
+                                        bbox=bbox,
+                                        geometry=geometry,
+                                        properties=properties)
+
+        return item
 
     def create_collection_id(self, wrapper: dict) -> str:
         return BioOracleConstants.catalog_id
+
+    def create_item_id(self, wrapper: dict) -> str:
+        return Utils.check_key(Constants.variable_name_key, wrapper)

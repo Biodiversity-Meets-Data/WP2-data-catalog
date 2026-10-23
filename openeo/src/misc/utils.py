@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from datetime import datetime
 from typing import Any
 
 import pystac
@@ -52,11 +53,12 @@ class Utils:
         return collection
 
     @staticmethod
-    def create_simple_item(item_id: str, bbox, datetime, start_datetime, end_datetime, geometry, properties) -> Item:
+    def create_simple_item(item_id: str, bbox: list[float | int], date_time: datetime, start_datetime: datetime,
+                           end_datetime: datetime, geometry, properties) -> Item:
         logger.info(f"creating simple item {item_id}")
         item = Item(id=item_id,
                     bbox=bbox,
-                    datetime=datetime,
+                    datetime=date_time,
                     start_datetime=start_datetime,
                     end_datetime=end_datetime,
                     geometry=geometry,

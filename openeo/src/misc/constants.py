@@ -57,3 +57,5 @@ class Constants:
     east_bounding_key = "eastBoundingCoordinate"
     north_bounding_key = "northBoundingCoordinate"
     south_bounding_key = "southBoundingCoordinate"
+    bbox_key = "bbox"
+    geometry = "geometry"

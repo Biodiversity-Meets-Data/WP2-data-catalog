@@ -43,7 +43,7 @@ class Parser(ParserInterface):
         # variable_names = [Soilgrids_Constants.BDOD_VALUE, Soilgrids_Constants.SAND_VALUE]
         variable_names = SoilgridsConstants.VARIABLE_NAMES
         attributes = extractor.extract_attributes(soilgrids_dataset)
-        start_datetime, end_datetime, datetime = self.get_dates(soilgrids_dataset)
+        start_datetime, end_datetime, date_time = self.get_dates(soilgrids_dataset)
 
         for resolution in resolutions:
             items = list()
@@ -53,7 +53,10 @@ class Parser(ParserInterface):
 
             for variable_name in variable_names:
                 entries = SoilgridsUtils.generate_entries(resolution=resolution, variable_names=[variable_name])
-                item_id = SoilgridsUtils.create_item_id(collection_id=collection_id, variable_name=variable_name)
+                item_id = self.create_item_id({
+                    Constants.collection_id_key: collection_id,
+                    Constants.variable_name_key: variable_name
+                })
                 properties = extra_fields.copy()
                 properties["soilgrids:variable"] = variable_name
                 item = self.create_item({
@@ -64,7 +67,7 @@ class Parser(ParserInterface):
                     Constants.variable_name_key: variable_name,
                     Constants.begin_date_key: start_datetime,
                     Constants.end_date_key: end_datetime,
-                    Constants.datetime_key: datetime
+                    Constants.datetime_key: date_time
                 })
 
                 if item is not None:
@@ -112,6 +115,12 @@ class Parser(ParserInterface):
         resolution = Utils.check_key(Constants.resolution_key, wrapper)
 
         return SoilgridsUtils.create_collection_id(resolution)
+
+    def create_item_id(self, wrapper: dict) -> str:
+        collection_id = Utils.check_key(Constants.collection_id_key, wrapper)
+        variable_name = Utils.check_key(Constants.variable_name_key, wrapper)
+
+        return SoilgridsUtils.create_item_id(collection_id=collection_id, variable_name=variable_name)
 
     def create_item(self, wrapper: dict) -> Item | None:
         variable_name = Utils.check_key(Constants.variable_name_key, wrapper)
