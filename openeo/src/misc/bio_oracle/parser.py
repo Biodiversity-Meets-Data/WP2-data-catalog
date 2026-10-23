@@ -33,8 +33,9 @@ class Parser(ParserInterface):
                                                     type="text/html",
                                                     title=collection_license_name)
         attributes = extractor.extract_attributes(dataset)
+        logger.info(attributes)
         collection_keywords = self.get_keywords(dataset=dataset, keywords=list(attributes.keys()))
-        extra_fields = self.get_extra_fields(dataset)
+        extra_fields = self.get_extra_fields(dataset=dataset, projection=Constants.WGS84_CODE)
         start_datetime, end_datetime, date_time = self.get_dates(dataset=dataset)
         bbox = self.get_bbox(dataset=dataset)
         geometry = self.get_geometry(dataset=dataset)
@@ -50,7 +51,7 @@ class Parser(ParserInterface):
                 Constants.datetime_key: datetime.fromisoformat(date_time),
                 Constants.properties_key: properties,
                 Constants.bbox_key: bbox,
-                Constants.geometry: geometry
+                Constants.geometry_key: geometry
             })
             items.append(item)
 
@@ -78,7 +79,7 @@ class Parser(ParserInterface):
         start_datetime = Utils.check_key(Constants.begin_date_key, wrapper)
         end_datetime = Utils.check_key(Constants.end_date_key, wrapper)
         bbox = Utils.check_key(Constants.bbox_key, wrapper)
-        geometry = Utils.check_key(Constants.geometry, wrapper)
+        geometry = Utils.check_key(Constants.geometry_key, wrapper)
         properties = Utils.check_key(Constants.properties_key, wrapper)
 
         item = Utils.create_simple_item(item_id=item_id,
@@ -92,7 +93,7 @@ class Parser(ParserInterface):
         return item
 
     def create_collection_id(self, wrapper: dict) -> str:
-        return BioOracleConstants.catalog_id
+        return BioOracleConstants.collection_id
 
     def create_item_id(self, wrapper: dict) -> str:
         return Utils.check_key(Constants.variable_name_key, wrapper)

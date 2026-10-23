@@ -73,16 +73,20 @@ class ParserInterface(ABC):
     def get_providers(self, dataset) -> list[Provider]:
         return self.get_extractor().extract_providers(dataset=dataset)
 
-    def get_extra_fields(self, dataset):
+    def get_extra_fields(self, dataset, projection=None):
         methods = Utils.check_key(Constants.methods_key, dataset)
         first_citation = self.get_extractor().extract_citation(methods=methods[0])
         doi = self.get_extractor().extract_doi(citation=first_citation)
-        # extra fields
-        return {
+        result = {
             "sci:citation": first_citation,
-            "sci:doi": doi,
-            "proj:code": Constants.HOMOLOSINE_CODE
+            "sci:doi": doi
         }
+
+        if projection is not None:
+            result["proj:code"] = projection
+
+        # extra fields
+        return result
 
     def create_collection(self,
                           collection_id: str,

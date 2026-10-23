@@ -35,8 +35,7 @@ class Parser(ParserInterface):
         soilgrids_dataset = self.query_dataset(uuid=SoilgridsConstants.soilgrids_dataset_uuid)
 
         # create top to bottom
-        top_catalog = Utils.create_catalog("top_catalog", description="at the top")
-        soilgrids_catalog = Utils.create_catalog(SoilgridsConstants.catalog_id, "below top")
+        soilgrids_catalog = Utils.create_catalog(SoilgridsConstants.catalog_id, SoilgridsConstants.catalog_id)
 
         # resolutions = [Soilgrids_Constants.RESOLUTION_1000]
         resolutions = SoilgridsConstants.RESOLUTIONS
@@ -49,7 +48,7 @@ class Parser(ParserInterface):
             items = list()
             # collection id
             collection_id = self.create_collection_id({Constants.resolution_key: resolution})
-            extra_fields = self.get_extra_fields(soilgrids_dataset)
+            extra_fields = self.get_extra_fields(soilgrids_dataset, Constants.HOMOLOSINE_CODE)
 
             for variable_name in variable_names:
                 entries = SoilgridsUtils.generate_entries(resolution=resolution, variable_names=[variable_name])
@@ -59,6 +58,11 @@ class Parser(ParserInterface):
                 })
                 properties = extra_fields.copy()
                 properties["soilgrids:variable"] = variable_name
+
+                # unit at item level, should be in attributes
+                if variable_name in attributes:
+                    properties[Constants.unit_key] = attributes[variable_name][Constants.attribute_standard_unit_key]
+
                 item = self.create_item({
                     Constants.properties_key: properties,
                     Constants.attributes_key: attributes,
@@ -107,9 +111,8 @@ class Parser(ParserInterface):
             soilgrids_collection.add_link(collection_license_link)
             soilgrids_catalog.add_child(soilgrids_collection)
 
-        top_catalog.add_child(soilgrids_catalog)
         # top_catalog.describe()
-        top_catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
+        soilgrids_catalog.normalize_and_save(root_href=self.output_path, catalog_type=CatalogType.SELF_CONTAINED)
 
     def create_collection_id(self, wrapper: dict) -> str:
         resolution = Utils.check_key(Constants.resolution_key, wrapper)

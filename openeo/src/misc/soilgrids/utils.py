@@ -12,9 +12,9 @@ from shapely.ops import unary_union
 from pystac.extensions.eo import EOExtension
 from pystac.extensions.raster import RasterExtension
 
-from src.misc.soilgrids.constants import Constants as Soilgrids_Constants
-from src.misc.geonetwork.utils import Utils as Geonetwork_Utils
-from src.misc.utils import Utils as Global_Utils
+from src.misc.soilgrids.constants import Constants as SoilgridsConstants
+from src.misc.geonetwork.utils import Utils as GeonetworkUtils
+from src.misc.utils import Utils as GlobalUtils
 from src.misc.constants import Constants
 from src.misc.query_types import QueryTypes
 
@@ -26,10 +26,10 @@ class Utils:
     @staticmethod
     def extract_band_from_name(file_name: str, known_bands: list):
         """some file name management to extract band name"""
-        tokens = file_name.split(Soilgrids_Constants.token_separator)
+        tokens = file_name.split(SoilgridsConstants.token_separator)
         nbr_tokens = len(tokens)
 
-        if nbr_tokens != Soilgrids_Constants.max_nbr_tokens:
+        if nbr_tokens != SoilgridsConstants.max_nbr_tokens:
             raise Exception(f"incorrect number of tokens: {nbr_tokens}")
 
         band = tokens[1]
@@ -41,11 +41,11 @@ class Utils:
 
     @staticmethod
     def generate_file_name(variable_name: str, band_name: str, resolution: str):
-        return Soilgrids_Constants.token_separator.join([variable_name, band_name, "mean", resolution])
+        return SoilgridsConstants.token_separator.join([variable_name, band_name, "mean", resolution])
 
     @staticmethod
     def generate_file_names():
-        file_names = Utils.generate_file_names_for(Soilgrids_Constants.VARIABLE_NAMES, Soilgrids_Constants.band_names, Soilgrids_Constants.RESOLUTIONS)
+        file_names = Utils.generate_file_names_for(SoilgridsConstants.VARIABLE_NAMES, SoilgridsConstants.band_names, SoilgridsConstants.RESOLUTIONS)
 
         return file_names
 
@@ -78,7 +78,7 @@ class Utils:
     def generate_url(variable_name: str, band_name: str, resolution: str):
         """builds an url based on available elements"""
         filename = Utils.generate_file_name(variable_name=variable_name, resolution=resolution, band_name=band_name)
-        url = f"{Soilgrids_Constants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
+        url = f"{SoilgridsConstants.soilgrids_base_url}/{resolution}m/{variable_name}/{filename}.{Constants.TIF_EXTENSION}"
 
         return url
 
@@ -104,15 +104,15 @@ class Utils:
         logger.info("extract links")
         links = list()
         # isric
-        url = Soilgrids_Constants.isric_base_url
+        url = SoilgridsConstants.isric_base_url
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # soilgrids
-        url = Soilgrids_Constants.soilgrids_base_url
+        url = SoilgridsConstants.soilgrids_base_url
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
         # catalog
-        url = Geonetwork_Utils.build_catalog_url(uuid=Soilgrids_Constants.soilgrids_dataset_uuid, query_type=action)
+        url = GeonetworkUtils.build_catalog_url(uuid=SoilgridsConstants.soilgrids_dataset_uuid, query_type=action)
         link = Link(rel=rel_type, target=url, media_type=MediaType.HTML)
         links.append(link)
 
@@ -160,7 +160,7 @@ class Utils:
         """generates a wrapper for later use, contains url and other metadata"""
         logger.info(f"generate entries for resolution {resolution}")
         entries = list()
-        urls = Utils.generate_urls(variable_names, Soilgrids_Constants.band_names, [resolution])
+        urls = Utils.generate_urls(variable_names, SoilgridsConstants.band_names, [resolution])
 
         for url in urls:
             entries.append({
@@ -188,13 +188,13 @@ class Utils:
             logger.warning(f"nothing to be done for {item_id}")
             return None
         else:
-            item = Global_Utils.create_simple_item(item_id=item_id,
-                                                   date_time=date_time,
-                                                   start_datetime=start_datetime,
-                                                   end_datetime=end_datetime,
-                                                   bbox=bbox,
-                                                   geometry=geometry,
-                                                   properties=properties)
+            item = GlobalUtils.create_simple_item(item_id=item_id,
+                                                  date_time=date_time,
+                                                  start_datetime=start_datetime,
+                                                  end_datetime=end_datetime,
+                                                  bbox=bbox,
+                                                  geometry=geometry,
+                                                  properties=properties)
 
             # assets must be added to item first
             for entry in entries:
@@ -206,17 +206,17 @@ class Utils:
                     title = entry[Constants.title_key]
                     # filename = os.path.basename(urlparse(url).path)
                     band_name = Utils.extract_band_from_name(file_name=title,
-                                                             known_bands=Soilgrids_Constants.band_names)
-                    asset = Global_Utils.create_asset_from(entry)
+                                                             known_bands=SoilgridsConstants.band_names)
+                    asset = GlobalUtils.create_asset_from(entry)
                     item.add_asset(title, asset)
 
                     eo = EOExtension.ext(asset, add_if_missing=True)
-                    eo.apply(bands=Global_Utils.create_bands([band_name]))
+                    eo.apply(bands=GlobalUtils.create_bands([band_name]))
 
                     # reuse attribute data read from the datasource (catalog)
                     if variable_name in attributes:
                         logger.info("there are attributes to add")
-                        raster_band = Global_Utils.create_raster_band(attributes[variable_name])
+                        raster_band = GlobalUtils.create_raster_band(attributes[variable_name])
                         raster_ext = RasterExtension.ext(asset, add_if_missing=True)
                         raster_ext.apply(bands=[raster_band])
 

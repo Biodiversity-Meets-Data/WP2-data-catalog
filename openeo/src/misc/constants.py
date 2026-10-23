@@ -9,6 +9,7 @@ class Constants:
     DEFAULT_PROJECTION = f"EPSG:{DEFAULT_PROJECTION_NUMBER}"
     # see https://github.com/stac-extensions/projection
     HOMOLOSINE_CODE = "ESRI:54052"
+    WGS84_CODE = "EPSG:4326"
     HOMOLOSINE_PROJ4 = "+proj=igh +lat_0=0 +lon_0=0 +datum=WGS84 +units=m +no_defs"
     # below are attribute keys
     attribute_standard_unit_key = "attributeStandardUnit"
@@ -58,4 +59,5 @@ class Constants:
     north_bounding_key = "northBoundingCoordinate"
     south_bounding_key = "southBoundingCoordinate"
     bbox_key = "bbox"
-    geometry = "geometry"
+    geometry_key = "geometry"
+    unit_key = "unit"

@@ -175,7 +175,7 @@ class Utils:
         datetimes = list()
 
         for item in items:
-            geometries.append(shape(item.geometry))
+            geometries.append(shape(item.geometry_key))
             datetimes.append(item.common_metadata.start_datetime)
             datetimes.append(item.common_metadata.end_datetime)
 
