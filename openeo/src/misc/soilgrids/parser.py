@@ -31,8 +31,8 @@ class Parser(ParserInterface):
         - normalize and save
         """
         # TODO: add geometry
-        extractor = super().get_extractor()
-        soilgrids_dataset = super().query_dataset(uuid=SoilgridsConstants.soilgrids_dataset_uuid)
+        extractor = self.get_extractor()
+        soilgrids_dataset = self.query_dataset(uuid=SoilgridsConstants.soilgrids_dataset_uuid)
 
         # create top to bottom
         top_catalog = Utils.create_catalog("top_catalog", description="at the top")
@@ -49,7 +49,7 @@ class Parser(ParserInterface):
             items = list()
             # collection id
             collection_id = self.create_collection_id({Constants.resolution_key: resolution})
-            extra_fields = super().get_extra_fields(soilgrids_dataset)
+            extra_fields = self.get_extra_fields(soilgrids_dataset)
 
             for variable_name in variable_names:
                 entries = SoilgridsUtils.generate_entries(resolution=resolution, variable_names=[variable_name])
@@ -72,21 +72,21 @@ class Parser(ParserInterface):
 
             # collection level
             added_keywords = list(("soilgrids", "aggregated", resolution)) + variable_names
-            collection_keywords = super().get_keywords(dataset=soilgrids_dataset, keywords=added_keywords)
+            collection_keywords = self.get_keywords(dataset=soilgrids_dataset, keywords=added_keywords)
             # license name and url
-            collection_license_name, license_url = super().get_collection_license(soilgrids_dataset)
+            collection_license_name, license_url = self.get_collection_license(soilgrids_dataset)
             collection_license_link = Utils.create_link(rel="license",
                                                         href=license_url,
                                                         type="text/html",
                                                         title=collection_license_name)
             # many providers
-            collection_providers = super().get_providers(soilgrids_dataset)
+            collection_providers = self.get_providers(soilgrids_dataset)
             # wrapper for title and description
-            collection_title, collection_description = super().get_collection_title(soilgrids_dataset)
+            collection_title, collection_description = self.get_collection_title(soilgrids_dataset)
             # gather extents
             collection_extent = self.get_extents(dataset=soilgrids_dataset)
 
-            soilgrids_collection = super().create_collection(collection_id=collection_id,
+            soilgrids_collection = self.create_collection(collection_id=collection_id,
                                                            title=collection_title,
                                                            description=collection_description,
                                                            extent=collection_extent,
@@ -140,9 +140,3 @@ class Parser(ParserInterface):
             item.add_links(links)
 
         return item
-
-    def get_extent(self, wrapper: dict) -> Extent:
-        items = Utils.check_key(Constants.items_key, wrapper)
-        spatial_extent, temporal_extent = Utils.infer_extents_from(items)
-
-        return Extent(spatial=spatial_extent, temporal=temporal_extent)
