@@ -32,20 +32,25 @@ class Parser(ParserInterface):
                                                     href=license_url,
                                                     type="text/html",
                                                     title=collection_license_name)
+        variable_names = extractor.extract_attributes(dataset)
         attributes = extractor.extract_attributes(dataset)
-        logger.info(attributes)
-        collection_keywords = self.get_keywords(dataset=dataset, keywords=list(attributes.keys()))
+        collection_keywords = self.get_keywords(dataset=dataset, keywords=list(variable_names.keys()))
         extra_fields = self.get_extra_fields(dataset=dataset, projection=Constants.WGS84_CODE)
         start_datetime, end_datetime, date_time = self.get_dates(dataset=dataset)
         bbox = self.get_bbox(dataset=dataset)
         geometry = self.get_geometry(dataset=dataset)
         items = list()
 
-        for attribute in attributes:
+        for variable_name in variable_names:
             properties = extra_fields.copy()
-            properties["soilgrids:variable"] = attribute
+            properties["soilgrids:variable"] = variable_name
+
+            # unit at item level, should be in attributes
+            if variable_name in attributes:
+                properties[Constants.unit_key] = attributes[variable_name][Constants.attribute_standard_unit_key]
+
             item = self.create_item(wrapper={
-                Constants.item_id_key: self.create_item_id({Constants.variable_name_key: attribute}),
+                Constants.item_id_key: self.create_item_id({Constants.variable_name_key: variable_name}),
                 Constants.begin_date_key: datetime.fromisoformat(start_datetime),
                 Constants.end_date_key: datetime.fromisoformat(end_datetime),
                 Constants.datetime_key: datetime.fromisoformat(date_time),
